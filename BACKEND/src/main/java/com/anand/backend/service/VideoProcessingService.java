@@ -2,11 +2,42 @@ package com.anand.backend.service;
 
 import org.springframework.stereotype.Service;
 import java.io.*;
-import java.util.UUID;
 
+/**
+ * Service responsible for processing and converting uploaded video files
+ * into HTTP Live Streaming (HLS) format using FFmpeg.
+ * <p>
+ * This service:
+ * <ul>
+ *   <li>Executes FFmpeg commands to generate .m3u8 playlists and .ts segments.</li>
+ *   <li>Creates dedicated folders for each movie using its unique ID.</li>
+ *   <li>Streams FFmpeg console output to the application logs for debugging.</li>
+ * </ul>
+ *
+ * <p>HLS (HTTP Live Streaming) allows adaptive bitrate streaming and is compatible
+ * with major players (e.g., VLC, HTML5 video players, iOS, Android).</p>
+ *
+ * <p><b>Example Output:</b><br>
+ * <code>
+ * /processed_videos/{movieId}/index.m3u8<br>
+ * /processed_videos/{movieId}/segment0.ts<br>
+ * /processed_videos/{movieId}/segment1.ts ...
+ * </code>
+ * </p>
+ *
+ * @author Krishanu
+ * @since 2025
+ */
 @Service
 public class VideoProcessingService {
 
+    /**
+     * Converts a given input video into HLS (.m3u8 + .ts) format using FFmpeg.
+     *
+     * @param inputPath  Full path to the source video file (e.g., uploaded .mp4).
+     * @param outputDir  Directory where the processed HLS output will be stored.
+     * @param movieId    Unique movie identifier used for output folder naming.
+     */
     public void convertToHLS(String inputPath, String outputDir, String movieId) {
         try {
             File inputFile = new File(inputPath);
@@ -27,10 +58,9 @@ public class VideoProcessingService {
                     new File(outputFolder, "index.m3u8").getAbsolutePath()
             );
 
-            pb.redirectErrorStream(true); // merge stderr and stdout
+            pb.redirectErrorStream(true);
             Process process = pb.start();
 
-            // ✅ Live FFmpeg output in console
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream()))) {
                 String line;
