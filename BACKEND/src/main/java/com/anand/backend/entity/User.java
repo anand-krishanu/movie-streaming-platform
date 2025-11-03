@@ -30,12 +30,13 @@ public class User {
     @Builder.Default
     private UserRole role = UserRole.USER;
 
-    private Date joinedAt = new Date();
 
     @Builder.Default
     private List<WatchLater> watchLater = new ArrayList<>();
+
     @Builder.Default
     private List<WatchHistory> watchHistory = new ArrayList<>();
+
     @Builder.Default
     private List<Favorite> favorites = new ArrayList<>();
 

@@ -16,10 +16,8 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class Favorite {
-    @Id
-    private String id;
-
-    private String userId;
     private String movieId;
+    private String title;
+    private String posterUrl;
     private Instant favoritedAt = Instant.now();
 }
