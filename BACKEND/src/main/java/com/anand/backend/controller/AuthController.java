@@ -44,17 +44,4 @@ public class AuthController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    @PostMapping("/watchlater")
-    public ResponseEntity<User> addToWatchLater(
-            @RequestParam String email,
-            @RequestBody WatchLater movie) {
-        return ResponseEntity.ok(userService.addToWatchLater(email, movie));
-    }
-
-
-    @PostMapping("/{email}/history/{movieId}")
-    public User addToHistory(@PathVariable String email, @PathVariable WatchHistory movie) {
-        return userService.addToWatchHistory(email, movie);
-    }
 }
