@@ -66,6 +66,9 @@ public class Movie {
     private int views = 0;
     private int likes = 0;
 
+    @Builder.Default
+    private int favoritesCount = 0;
+
     private String filePath;
     private String thumbnail;
     private long size;
