@@ -1,6 +1,7 @@
 package com.anand.backend.service;
 
 import com.anand.backend.entity.Movie;
+import com.anand.backend.enums.Genre;
 import com.anand.backend.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -60,7 +62,7 @@ public class MovieService {
      */
     @Transactional
     public Movie saveMovie(String title, String description, String length,
-                           String imdbRating, String genre, MultipartFile file)
+                           String imdbRating, Genre genre, MultipartFile file)
             throws IOException, InterruptedException {
 
         // ✅ Ensure upload directory exists
@@ -90,8 +92,12 @@ public class MovieService {
                 .genre(genre)
                 .filePath(destFile.getAbsolutePath())
                 .size(file.getSize())
-                .uploadedAt(new Date())
+                .uploadedAt(Instant.now())
                 .build();
+
+        if (file.isEmpty() || title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Movie title and file are required");
+        }
 
         Movie saved = movieRepository.save(movie);
 
