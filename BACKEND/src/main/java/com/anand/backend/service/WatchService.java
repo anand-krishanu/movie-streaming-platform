@@ -70,7 +70,7 @@ public class WatchService {
         user.getWatchHistory().add(
                 WatchHistory.builder()
                         .movieId(movieId)
-                        .watchedAt(new Date())
+                        .watchedAt(Instant.now())
                         .progress(progress)
                         .build()
         );
