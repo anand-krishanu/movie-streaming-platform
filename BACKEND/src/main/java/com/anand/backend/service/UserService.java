@@ -43,46 +43,6 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    // --- WATCH LATER LOGIC ---
-    public User addToWatchLater(String email, WatchLater watchLaterItem) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        boolean alreadyExists = user.getWatchLater().stream()
-                .anyMatch(w -> w.getMovieId().equals(watchLaterItem.getMovieId()));
-
-        if (!alreadyExists) {
-            watchLaterItem.setAddedAt(Instant.now());
-            user.getWatchLater().add(watchLaterItem);
-        }
-
-        return userRepository.save(user);
-    }
-
-    public User removeFromWatchLater(String email, String movieId) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        user.getWatchLater().removeIf(w -> w.getMovieId().equals(movieId));
-        return userRepository.save(user);
-    }
-
-    // --- WATCH HISTORY LOGIC ---
-    public User addToWatchHistory(String email, WatchHistory historyItem) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        boolean alreadyExists = user.getWatchHistory().stream()
-                .anyMatch(w -> w.getMovieId().equals(historyItem.getMovieId()));
-
-        if (!alreadyExists) {
-            historyItem.setWatchedAt(Instant.now());
-            user.getWatchHistory().add(historyItem);
-        }
-
-        return userRepository.save(user);
-    }
-
     // --- ADMIN OR PROFILE USE ---
     public List<User> getAllUsers() {
         return userRepository.findAll();
