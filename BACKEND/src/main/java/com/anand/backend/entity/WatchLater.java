@@ -1,25 +1,20 @@
 package com.anand.backend.entity;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
-import java.util.Date;
 
-@Document(collection = "favorites")
+@Document(collection = "watch_later")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Favorite {
-    @Id
-    private String id;
-
-    private String userId;
+public class WatchLater {
     private String movieId;
-    private Instant favoritedAt = Instant.now();
+    private String title;
+    private String posterUrl;
+    private Instant addedAt;
 }
