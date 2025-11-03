@@ -1,5 +1,7 @@
 package com.anand.backend.service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import java.io.*;
 
@@ -28,6 +30,7 @@ import java.io.*;
  * @author Krishanu
  * @since 2025
  */
+@Slf4j
 @Service
 public class VideoProcessingService {
 
@@ -38,6 +41,7 @@ public class VideoProcessingService {
      * @param outputDir  Directory where the processed HLS output will be stored.
      * @param movieId    Unique movie identifier used for output folder naming.
      */
+    @Async
     public void convertToHLS(String inputPath, String outputDir, String movieId) {
         try {
             File inputFile = new File(inputPath);
@@ -71,9 +75,9 @@ public class VideoProcessingService {
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                System.out.println("FFmpeg conversion complete for movieId: " + movieId);
+                log.info("FFmpeg conversion complete for movieId: {}", movieId);
             } else {
-                System.err.println("FFmpeg failed with exit code " + exitCode);
+                log.error("FFmpeg failed with exit code {}", exitCode);
             }
 
         } catch (Exception e) {
