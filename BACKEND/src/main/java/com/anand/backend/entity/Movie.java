@@ -1,10 +1,11 @@
 package com.anand.backend.entity;
 
+import com.anand.backend.enums.Genre;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * Represents a Movie document stored in the MongoDB <b>movie</b> collection.
@@ -57,12 +58,13 @@ public class Movie {
     private String movieDescription;
     private String movieLength;
     private String IMDBRating;
-    private String genre;
+    private Genre genre;
     private String language;
 
     private String uploadedBy;
-    private Date uploadedAt = new Date();
+    private Instant uploadedAt = Instant.now();
     private int views = 0;
+    private int likes = 0;
 
     private String filePath;
     private String thumbnail;

@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Document(collection = "watch_history")
@@ -15,11 +15,9 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class WatchHistory {
-    @Id
-    private String id;
-
-    private String userId;
     private String movieId;
-    private Date watchedAt = new Date();
+    private Instant watchedAt;
+    private String title;
+    private String posterUrl;
     private int progress; // percentage watched
 }
