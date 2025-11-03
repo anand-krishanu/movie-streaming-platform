@@ -1,6 +1,7 @@
 package com.anand.backend.controller;
 
 import com.anand.backend.entity.Movie;
+import com.anand.backend.enums.Genre;
 import com.anand.backend.service.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,7 +81,7 @@ public class MovieController {
             @RequestParam("description") String description,
             @RequestParam("length") String length,
             @RequestParam("imdb") String imdbRating,
-            @RequestParam("genre") String genre,
+            @RequestParam("genre") Genre genre,
             @RequestParam("file") MultipartFile file
     ) {
         try {
