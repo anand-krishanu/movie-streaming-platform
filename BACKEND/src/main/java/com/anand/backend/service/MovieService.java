@@ -5,10 +5,12 @@ import com.anand.backend.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,6 +58,7 @@ public class MovieService {
      * @throws IOException              If file writing or transfer fails.
      * @throws InterruptedException     If FFmpeg process is interrupted.
      */
+    @Transactional
     public Movie saveMovie(String title, String description, String length,
                            String imdbRating, String genre, MultipartFile file)
             throws IOException, InterruptedException {
@@ -87,6 +90,7 @@ public class MovieService {
                 .genre(genre)
                 .filePath(destFile.getAbsolutePath())
                 .size(file.getSize())
+                .uploadedAt(new Date())
                 .build();
 
         Movie saved = movieRepository.save(movie);

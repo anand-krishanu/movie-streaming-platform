@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+
 /**
  * Represents a Movie document stored in the MongoDB <b>movie</b> collection.
  * <p>
@@ -42,7 +44,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @ToString
 @Builder
-@Document(collection = "movie")
+@Document(collection = "movies")
 public class Movie {
     /**
      * Unique identifier for the movie document.
@@ -56,6 +58,11 @@ public class Movie {
     private String movieLength;
     private String IMDBRating;
     private String genre;
+    private String language;
+
+    private String uploadedBy;
+    private Date uploadedAt = new Date();
+    private int views = 0;
 
     private String filePath;
     private String thumbnail;
