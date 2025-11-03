@@ -19,15 +19,15 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     private final UserService userService;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication)
-            throws IOException, ServletException {
+    public void onAuthenticationSuccess(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication) throws IOException, ServletException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+
         userService.saveOrUpdateUser(oAuth2User);
 
-        // Redirect to frontend or dashboard
-        response.sendRedirect("http://localhost:3000/dashboard");
+        response.sendRedirect("/");
     }
 }
