@@ -5,6 +5,9 @@ import com.anand.backend.enums.Genre;
 import com.anand.backend.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -137,5 +140,21 @@ public class MovieService {
             if (file.exists()) file.delete();
             movieRepository.deleteById(id);
         }
+    }
+
+    public Page<Movie> getAllMovies(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return movieRepository.findAll(pageable);
+    }
+
+    // For search (if you want later)
+    public Page<Movie> searchMovies(String title, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return movieRepository.findByTitleContainingIgnoreCase(title, pageable);
+    }
+
+    public Page<Movie> filterMovies(String genre, String language, Integer year, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return movieRepository.filterMovies(genre, language, year, pageable);
     }
 }
