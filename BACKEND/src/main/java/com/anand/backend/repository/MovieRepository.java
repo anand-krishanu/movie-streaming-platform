@@ -1,7 +1,10 @@
 package com.anand.backend.repository;
 
 import com.anand.backend.entity.Movie;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -33,4 +36,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MovieRepository extends MongoRepository<Movie, String> {
     // Custom query methods can be defined here if needed
+    Page<Movie> findAll(Pageable pageable);
+    Page<Movie> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
+    @Query("{ 'title': { $regex: ?0, $options: 'i' } }")
+    Page<Movie> findByTitleRegex(String title, Pageable pageable);
+
+    @Query("{ $and: [ "
+            + " { $or: [ { 'genre': ?0 }, { ?0: null } ] }, "
+            + " { $or: [ { 'language': ?1 }, { ?1: null } ] }, "
+            + " { $or: [ { 'releaseYear': ?2 }, { ?2: null } ] } "
+            + " ] }")
+    Page<Movie> filterMovies(String genre, String language, Integer releaseYear, Pageable pageable);
 }
