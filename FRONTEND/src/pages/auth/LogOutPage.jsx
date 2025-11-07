@@ -1,27 +1,38 @@
-// import { logOut } from "../../firebase";
-// import { useNavigate } from "react-router-dom";
+// src/pages/auth/LogOutPage.jsx
+import React, { useEffect, useState } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../../context/useAuthStore";
 
-export default function Logout() {
-//   const navigate = useNavigate();
+const Logout = () => {
+  const navigate = useNavigate();
+  const clearUser = useAuthStore((state) => state.clearUser);
+  const [loading, setLoading] = useState(true);
 
-//   const handleLogout = async () => {
-//     await logOut();
-//     navigate("/");
-//   };
+  useEffect(() => {
+    const doSignOut = async () => {
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.warn("Firebase signOut failed (maybe user already signed out):", err);
+      } finally {
+        // clear local app state and go to login
+        clearUser();
+        setLoading(false);
+        navigate("/");
+      }
+    };
+
+    doSignOut();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 to-purple-800">
-      <div className="bg-white/10 backdrop-blur-xl p-10 rounded-3xl text-center shadow-xl">
-        <h1 className="text-2xl font-semibold text-white mb-6">
-          Ready to log out?
-        </h1>
-        <button
-        //   onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300"
-        >
-          Logout
-        </button>
-      </div>
+    <div className="flex items-center justify-center h-screen bg-black text-white">
+      {loading ? <p>Signing out...</p> : <p>Redirecting...</p>}
     </div>
   );
-}
+};
+
+export default Logout;
