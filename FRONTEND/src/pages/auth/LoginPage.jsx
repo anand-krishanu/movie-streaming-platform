@@ -1,25 +1,57 @@
-// import { signInWithGoogle } from "../../firebase";
-// import { useNavigate } from "react-router-dom";
+// src/pages/auth/LoginPage.jsx
+import React, { useState } from "react";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "../../firebase";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../../context/useAuthStore";
 
-export default function Login() {
-//   const navigate = useNavigate();
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const setAuthUser = useAuthStore((state) => state.setUser);
+  const targetRoute = "/"; // home route per AppRoutes.jsx
 
-//   const handleLogin = async () => {
-//     await signInWithGoogle();
-//     navigate("/dashboard");
-//   };
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      // map Firebase user to the store shape
+      const storeUser = {
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+      };
+      // set user in app store so other components can react
+      setAuthUser(storeUser);
+
+      // non-blocking navigation so popup can close cleanly
+      navigate(targetRoute);
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      // temporary fallback; replace with a toast/toastify in future
+      alert("Sign-in failed. Check console for details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800">
-      <div className="bg-white/10 backdrop-blur-xl p-10 rounded-3xl text-center shadow-2xl">
-        <h1 className="text-3xl font-bold text-white mb-6">Welcome Back 👋</h1>
-        <button
-        //   onClick={handleLogin}
-          className="bg-white text-black px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 transition-all duration-300"
-        >
-          Sign in with Google
-        </button>
-      </div>
+    <div className="flex flex-col justify-center items-center h-screen bg-black text-white">
+      <h1 className="text-4xl font-bold mb-8">CineStream</h1>
+
+      <button
+        onClick={handleGoogleLogin}
+        disabled={loading}
+        className={`bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg flex items-center ${
+          loading ? "opacity-60 cursor-not-allowed" : ""
+        }`}
+      >
+        {loading ? "Signing in..." : "Sign in with Google"}
+      </button>
     </div>
   );
-}
+};
+
+export default LoginPage;
