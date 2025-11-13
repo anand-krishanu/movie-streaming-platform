@@ -1,23 +1,42 @@
-import { useEffect } from "react";
-import { useMovieStore } from "../../context/useMovieStore";
-import GenreRow from "../../components/GenreRow";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
+import GenreRow from "../../components/GenreRow";
 
 export default function Home() {
-  const { moviesByGenre, fetchMovies, loading } = useMovieStore();
+  const [moviesByGenre, setMoviesByGenre] = useState({});
 
   useEffect(() => {
-    fetchMovies();
-  }, [fetchMovies]);
+    const fetchMovies = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/movies`);
+        const data = await res.json();
 
-  if (loading) return <div className="text-center mt-20">Loading movies...</div>;
+        // Group by genre
+        const grouped = data.movies.reduce((acc, movie) => {
+          const genre = Array.isArray(movie.genre)
+            ? movie.genre[0]
+            : movie.genre || "Other";
+          if (!acc[genre]) acc[genre] = [];
+          acc[genre].push(movie);
+          return acc;
+        }, {});
+        setMoviesByGenre(grouped);
+      } catch (err) {
+        console.error("Error fetching movies:", err);
+      }
+    };
+
+    fetchMovies();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white pt-20 px-10">
+    <div className="bg-black min-h-screen text-white">
       <Navbar />
-      {Object.keys(moviesByGenre).map((genre) => (
-        <GenreRow key={genre} genre={genre} movies={moviesByGenre[genre]} />
-      ))}
+      <div className="pt-20 space-y-10">
+        {Object.entries(moviesByGenre).map(([genre, movies]) => (
+          <GenreRow key={genre} genre={genre} movies={movies} />
+        ))}
+      </div>
     </div>
   );
 }

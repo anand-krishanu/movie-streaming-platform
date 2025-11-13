@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080/api", // adjust if backend runs elsewhere
+  baseURL: "http://localhost:5000/api", // backend runs on port 5000 by default
   withCredentials: true,
 });
 

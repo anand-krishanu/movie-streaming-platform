@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-neutral-950 text-white;
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
 }

@@ -1,19 +1,59 @@
+import React from "react";
+import useAuthStore from "../../context/useAuthStore";
+import { auth } from "../../firebase";
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
-export default function Profile() {
-//   const user = auth.currentUser;
+const ProfilePage = () => {
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
 
-//   return (
-//     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-indigo-800 to-violet-700 text-white">
-//       <h1 className="text-4xl font-bold mb-6">Dashboard</h1>
-//       {user ? (
-//         <div className="text-center">
-//           <img src={user.photoURL} alt="Profile" className="w-20 h-20 rounded-full mx-auto mb-4" />
-//           <h2 className="text-2xl font-semibold">{user.displayName}</h2>
-//           <p className="text-sm opacity-80">{user.email}</p>
-//         </div>
-//       ) : (
-//         <p className="text-lg">No user signed in.</p>
-//       )}
-//     </div>
-//   );
-}
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("Failed to log out. Try again.");
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
+        <h2 className="text-2xl mb-4">You’re not signed in</h2>
+        <button
+          onClick={() => navigate("/login")}
+          className="bg-red-600 px-5 py-2 rounded-lg font-semibold hover:bg-red-700"
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+      <div className="bg-gray-800 p-10 rounded-2xl shadow-xl text-center w-80">
+        <img
+          src={user.photoURL || "https://via.placeholder.com/150"}
+          alt="Profile"
+          className="rounded-full w-32 h-32 mx-auto mb-4 border-4 border-red-600"
+        />
+        <h1 className="text-2xl font-bold mb-1">{user.name || "Unnamed"}</h1>
+        <p className="text-gray-400 mb-6">{user.email}</p>
+
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-all"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ProfilePage;

@@ -9,7 +9,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const setAuthUser = useAuthStore((state) => state.setUser);
-  const targetRoute = "/"; // home route per AppRoutes.jsx
+  const targetRoute = "/home"; // home route per AppRoutes.jsx
 
   const handleGoogleLogin = async () => {
     try {
