@@ -1,0 +1,68 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap");
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #000;
+  margin: 0;
+  padding: 0;
+}
+
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100vh;
+  color: #fff;
+  background: url("https://analyticsindiamag.com/wp-content/uploads/2019/05/apps.55787.9007199266246365.687a10a8-4c4a-4a47-8ec5-a95f70d8852d.jpg")
+    center/cover no-repeat;
+}
+
+.hero-section h1 {
+  font-weight: bold;
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin-bottom: 20px;
+}
+
+.hero-section p {
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  max-width: 600px;
+}
+
+.button-container {
+  margin-top: 25px;
+}
+
+.land-button {
+  display: inline-block;
+  padding: 12px 25px;
+  text-decoration: none;
+  color: #fff;
+  background-color: #ff0000;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.land-button:hover {
+  background-color: #b30808;
+}
+
+@media (max-width: 768px) {
+  .hero-section h1 {
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+  }
+
+  .hero-section p {
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+  }
+
+  .land-button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}

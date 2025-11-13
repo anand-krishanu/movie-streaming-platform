@@ -11,7 +11,7 @@ export default function Navbar() {
   const clearUser = useAuthStore((s) => s.clearUser);
 
   const navItems = [
-    { name: "Home", path: "/" },
+    { name: "Home", path: "/home" },
     { name: "Watchlist", path: "/watchlist" },
     { name: "History", path: "/history" },
     { name: "Favorites", path: "/favorites" },

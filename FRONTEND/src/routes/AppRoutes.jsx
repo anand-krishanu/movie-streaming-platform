@@ -11,18 +11,19 @@ import ProfilePage from "../pages/Profile/ProfilePage.jsx";
 // import SearchResults from "../pages/Search/SearchResults.jsx";
 import LandingPage from "../pages/Landing/LandingPage.jsx";
 import NotFound from "../pages/NotFound/NotFound.jsx";
+import MoviePlayer from "../pages/Movie/MoviePlayer.jsx";
 
 const appRoutes = createBrowserRouter([
-  { path: "/", element: <Home /> },
-  { path: "/landing", element: <LandingPage /> },
+  { path: "/", element: <LandingPage /> },
+  { path: "/home", element: <Home /> },
   { path: "/watchlist", element: <Watchlist /> },
   { path: "/history", element: <WatchHistory /> },
   { path: "/favorites", element: <FavouritesPage /> },
   { path: "/login", element: <Login /> },
   { path: "/logout", element: <Logout /> },
   { path: "/profile", element: <ProfilePage /> },
+  { path: "/player/:id", element: <MoviePlayer /> },
   // { path: "/watch/:id", element: <WatchPage /> },
-  // { path: "/movie/:id", element: <MovieDetails /> },
   // { path: "/search", element: <SearchResults /> },
   { path: "*", element: <NotFound /> },
 ]);
