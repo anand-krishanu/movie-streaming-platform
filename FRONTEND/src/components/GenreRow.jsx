@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import MovieCard from "./MovieCard";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-export default function GenreRow({ genre, movies }) {
+export default function GenreRow({ genre, movies, onFavorite, onWatchLater }) {
   const rowRef = useRef();
 
   const scroll = (direction) => {
@@ -32,8 +32,12 @@ export default function GenreRow({ genre, movies }) {
       >
         {Array.isArray(movies) &&
           movies.map((movie) => (
-            <div key={movie.id} className="min-w-[180px]">
-              <MovieCard movie={movie} />
+            <div key={movie._id || movie.id} className="min-w-[180px]">
+              <MovieCard 
+                movie={movie} 
+                onFavorite={onFavorite}
+                onWatchLater={onWatchLater}
+              />
             </div>
           ))}
       </div>

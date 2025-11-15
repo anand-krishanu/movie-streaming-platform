@@ -9,13 +9,27 @@ const router = express.Router();
 router.post("/upsert", async (req, res) => {
   const { email, name, picture } = req.body;
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    const isNewUser = !existingUser;
+    
     const user = await User.findOneAndUpdate(
       { email },
-      { $set: { name, picture }, $setOnInsert: { createdAt: new Date() } },
+      { 
+        $set: { name, picture }, 
+        $setOnInsert: { createdAt: new Date() } 
+      },
       { upsert: true, new: true }
     );
-    res.json(user);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    
+    res.json({ 
+      user, 
+      isNewUser,
+      message: isNewUser ? "Welcome! Your account has been created." : "Welcome back!"
+    });
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
 });
 
 // GET /api/users/:id
