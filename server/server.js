@@ -5,11 +5,18 @@ import dotenv from "dotenv";
 import movieRoutes from "./routes/movieRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import { seedMovies } from "./seedMovies.js";
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// CORS configuration for frontend with credentials
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.use("/api/movies", movieRoutes);
@@ -23,8 +30,16 @@ mongoose.set("strictQuery", false);
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log("MongoDB connected");
+    
+    // Auto-seed movies if collection is empty
+    try {
+      await seedMovies();
+    } catch (error) {
+      console.warn("Auto-seeding failed:", error.message);
+    }
+    
     app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
   })
   .catch((err) => {

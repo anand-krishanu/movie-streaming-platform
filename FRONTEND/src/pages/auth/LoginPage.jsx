@@ -39,7 +39,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col justify-center items-center h-screen bg-black text-white">
-      <h1 className="text-4xl font-bold mb-8">CineStream</h1>
+      <h1 className="text-4xl font-bold mb-8">Movie Stream</h1>
 
       <button
         onClick={handleGoogleLogin}
