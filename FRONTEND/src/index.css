@@ -6,4 +6,23 @@
   .scrollbar-thin {
     scrollbar-width: thin;
   }
+  
+  /* Hide scrollbars for genre rows */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+  
+  /* Force hide scrollbars on Swiper components */
+  .swiper::-webkit-scrollbar,
+  .swiper-wrapper::-webkit-scrollbar,
+  .swiper-container::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
 }

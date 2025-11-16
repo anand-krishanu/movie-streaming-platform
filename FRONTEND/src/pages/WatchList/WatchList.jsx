@@ -36,39 +36,6 @@ export default function Watchlist() {
     }
   };
 
-  const handleRemoveWatchLater = async (movieId) => {
-    if (!dbUser || dbUser._isFallback) {
-      toast.warning("Please refresh the page to reconnect to the database.");
-      return;
-    }
-
-    try {
-      await userApi.removeWatchLater(dbUser._id, movieId);
-      updateWatchLater(movieId, false); // Update local state immediately
-      toast.success("Removed from watch later! 🗑️");
-    } catch (error) {
-      console.error("Error removing from watch later:", error);
-      toast.error("Failed to remove from watch later");
-      // Refresh data on error to sync with backend
-      await refreshUserData();
-    }
-  };
-
-  const handleAddToFavorites = async (movieId) => {
-    if (!dbUser || dbUser._isFallback) {
-      toast.warning("Please refresh the page to reconnect to the database.");
-      return;
-    }
-
-    try {
-      await userApi.addFavorite(dbUser._id, movieId);
-      toast.success("Added to favorites! ❤️");
-    } catch (error) {
-      console.error("Error adding to favorites:", error);
-      toast.error("Failed to add to favorites");
-    }
-  };
-
   const watchLaterMovies = userData?.watchLater || [];
 
   if (loading) {
@@ -119,8 +86,6 @@ export default function Watchlist() {
         ) : (
           <MovieGrid
             movies={watchLaterMovies}
-            onFavorite={handleAddToFavorites}
-            onWatchLater={handleRemoveWatchLater}
           />
         )}
       </div>
