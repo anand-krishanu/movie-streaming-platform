@@ -2,7 +2,7 @@
 import React from "react";
 import MovieCard from "./MovieCard";
 
-const MovieGrid = ({ movies, onFavorite, onWatchLater }) => {
+const MovieGrid = ({ movies }) => {
   if (!movies || movies.length === 0) {
     return null;
   }
@@ -13,8 +13,6 @@ const MovieGrid = ({ movies, onFavorite, onWatchLater }) => {
         <MovieCard
           key={movie._id || movie.id}
           movie={movie}
-          onFavorite={onFavorite}
-          onWatchLater={onWatchLater}
         />
       ))}
     </div>

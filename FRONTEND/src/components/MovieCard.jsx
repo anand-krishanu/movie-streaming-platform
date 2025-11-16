@@ -37,11 +37,6 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
         updateFavorites(movieId, true);
         toast.success("Added to favorites! ❤️");
       }
-      
-      // Call parent callback if provided
-      if (onFavorite) {
-        await onFavorite(movieId);
-      }
     } catch (error) {
       console.error("Error toggling favorite:", error);
       toast.error("Failed to update favorites");
@@ -73,11 +68,6 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
         await userApi.addWatchLater(dbUser._id, movieId);
         updateWatchLater(movieId, true);
         toast.success("Added to watch later! 🕒");
-      }
-      
-      // Call parent callback if provided
-      if (onWatchLater) {
-        await onWatchLater(movieId);
       }
     } catch (error) {
       console.error("Error toggling watch later:", error);

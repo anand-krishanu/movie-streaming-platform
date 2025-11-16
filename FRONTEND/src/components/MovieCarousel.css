@@ -1,0 +1,195 @@
+/* MovieCarousel Styles */
+.carousel-container {
+  margin-bottom: 30px !important;
+}
+
+.movie-carousel {
+  position: relative;
+}
+
+.carousel-item-wrapper {
+  display: flex;
+  align-items: center;
+  min-height: 500px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+.col-md-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding: 0 15px;
+}
+
+.carousel-image {
+  height: 500px !important;
+  object-fit: cover;
+  border-radius: 10px;
+  mask-image: linear-gradient(to left, transparent, #212121);
+  -webkit-mask-image: linear-gradient(to left, transparent, #212121);
+  width: 100% !important;
+  display: block;
+}
+
+.carousel-content {
+  padding: 1.5rem !important;
+  color: white;
+}
+
+.carousel-title {
+  font-size: 1.8rem !important;
+  margin-bottom: 10px !important;
+  font-weight: bold;
+  color: white;
+}
+
+.carousel-detail {
+  margin-bottom: 5px !important;
+  color: #e5e5e5;
+  font-size: 1rem;
+}
+
+.carousel-description {
+  margin-bottom: 5px !important;
+  color: #cccccc;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+/* Navigation Controls */
+.carousel-control-prev,
+.carousel-control-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-control-prev {
+  left: 15px;
+}
+
+.carousel-control-next {
+  right: 15px;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  background-size: 100% 100% !important;
+  color: white;
+  padding: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.carousel-control-prev-icon::after,
+.carousel-control-next-icon::after {
+  content: '';
+}
+
+.carousel-control-prev:hover .carousel-control-prev-icon,
+.carousel-control-next:hover .carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+  }
+  
+  .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  .carousel-image {
+    height: 300px !important;
+  }
+  
+  .carousel-title {
+    font-size: 1.5rem !important;
+  }
+  
+  .carousel-content {
+    padding: 1rem !important;
+  }
+}
+
+/* Swiper overrides */
+.swiper {
+  overflow: visible;
+}
+
+.swiper-slide {
+  height: auto;
+}
+
+.swiper-button-disabled {
+  opacity: 0.3;
+}
+
+/* Comprehensive scrollbar hiding for carousel */
+.movie-carousel::-webkit-scrollbar,
+.swiper::-webkit-scrollbar,
+.swiper-wrapper::-webkit-scrollbar,
+.swiper-container::-webkit-scrollbar,
+.carousel-container::-webkit-scrollbar,
+.carousel-item-wrapper::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.movie-carousel,
+.swiper,
+.swiper-wrapper,
+.swiper-container,
+.carousel-container,
+.carousel-item-wrapper {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+/* Hide all scrollbars in carousel hierarchy */
+.carousel-container *::-webkit-scrollbar,
+.movie-carousel *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.carousel-container *,
+.movie-carousel * {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}

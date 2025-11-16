@@ -13,7 +13,7 @@ export default function Navbar() {
   const navItems = [
     { name: "Home", path: "/home" },
     { name: "Watchlist", path: "/watchlist" },
-    { name: "History", path: "/history" },
+    // { name: "History", path: "/history" },
     { name: "Favorites", path: "/favorites" },
   ];
 
