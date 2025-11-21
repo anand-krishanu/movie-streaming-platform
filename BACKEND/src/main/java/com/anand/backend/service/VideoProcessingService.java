@@ -1,87 +1,149 @@
 package com.anand.backend.service;
 
+import com.anand.backend.dto.VideoProcessingResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import java.io.*;
 
-/**
- * Service responsible for processing and converting uploaded video files
- * into HTTP Live Streaming (HLS) format using FFmpeg.
- * <p>
- * This service:
- * <ul>
- *   <li>Executes FFmpeg commands to generate .m3u8 playlists and .ts segments.</li>
- *   <li>Creates dedicated folders for each movie using its unique ID.</li>
- *   <li>Streams FFmpeg console output to the application logs for debugging.</li>
- * </ul>
- *
- * <p>HLS (HTTP Live Streaming) allows adaptive bitrate streaming and is compatible
- * with major players (e.g., VLC, HTML5 video players, iOS, Android).</p>
- *
- * <p><b>Example Output:</b><br>
- * <code>
- * /processed_videos/{movieId}/index.m3u8<br>
- * /processed_videos/{movieId}/segment0.ts<br>
- * /processed_videos/{movieId}/segment1.ts ...
- * </code>
- * </p>
- *
- * @author Krishanu
- * @since 2025
- */
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.concurrent.CompletableFuture;
+
 @Slf4j
 @Service
 public class VideoProcessingService {
 
-    /**
-     * Converts a given input video into HLS (.m3u8 + .ts) format using FFmpeg.
-     *
-     * @param inputPath  Full path to the source video file (e.g., uploaded .mp4).
-     * @param outputDir  Directory where the processed HLS output will be stored.
-     * @param movieId    Unique movie identifier used for output folder naming.
-     */
+    // Use CompletableFuture to return result to the caller (MovieService)
     @Async
-    public void convertToHLS(String inputPath, String outputDir, String movieId) {
+    public CompletableFuture<VideoProcessingResult> processFullPipeline(
+            String movieId,
+            String inputFilePath,
+            String outputDirBase
+    ) {
+        log.info("🎬 Starting FFmpeg pipeline for Movie ID: {}", movieId);
+
+        File inputFile = new File(inputFilePath);
+        File outputDir = new File(outputDirBase);
+
+        if (!outputDir.exists()) outputDir.mkdirs();
+
         try {
-            File inputFile = new File(inputPath);
-            File outputFolder = new File(outputDir, movieId);
+            // 1. Generate HLS Master Playlist (Multi-bitrate)
+            String masterPlaylist = convertToMultiBitrateHLS(inputFile, outputDir);
 
-            if (!outputFolder.exists()) outputFolder.mkdirs();
+            // 2. Generate Static Thumbnail (Taken at 5th second)
+            String thumbnailPath = generateThumbnail(inputFile, outputDir);
 
-            // FFmpeg command
-            ProcessBuilder pb = new ProcessBuilder(
-                    "ffmpeg",
-                    "-i", inputFile.getAbsolutePath(),
-                    "-profile:v", "baseline",
-                    "-level", "3.0",
-                    "-start_number", "0",
-                    "-hls_time", "10",
-                    "-hls_list_size", "0",
-                    "-f", "hls",
-                    new File(outputFolder, "index.m3u8").getAbsolutePath()
-            );
+            // 3. Generate 5-Second Preview GIF (For hover effect)
+            String previewGifPath = generatePreviewGif(inputFile, outputDir);
 
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
+            log.info("✅ Pipeline Finished for Movie ID: {}", movieId);
 
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println("[FFmpeg] " + line);
-                }
-            }
-
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                log.info("FFmpeg conversion complete for movieId: {}", movieId);
-            } else {
-                log.error("FFmpeg failed with exit code {}", exitCode);
-            }
+            // Return the relative paths (Assuming you serve static files from outputDir)
+            // In production, you would upload these files to S3 here and return S3 URLs.
+            return CompletableFuture.completedFuture(new VideoProcessingResult(
+                    masterPlaylist,
+                    thumbnailPath,
+                    previewGifPath
+            ));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("❌ FFmpeg pipeline failed for {}", movieId, e);
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    // --- TASK 1: HLS CONVERSION ---
+    private String convertToMultiBitrateHLS(File input, File outputDir) throws IOException, InterruptedException {
+        String segmentFilename = outputDir.getAbsolutePath() + "/segment_%v_%03d.ts";
+        String masterPlaylist = outputDir.getAbsolutePath() + "/master.m3u8";
+
+        // Ensure sub-directories exist if needed, but here we flatten for simplicity
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffmpeg", "-y", "-i", input.getAbsolutePath(),
+                "-filter_complex",
+                "[0:v]split=3[v1][v2][v3];" +
+                        "[v1]scale=w=1920:h=1080[v1out];" +
+                        "[v2]scale=w=1280:h=720[v2out];" +
+                        "[v3]scale=w=854:h=480[v3out]",
+
+                // 1080p Stream
+                "-map", "[v1out]", "-c:v:0", "libx264", "-b:v:0", "5000k", "-maxrate:v:0", "5350k", "-bufsize:v:0", "7500k",
+                "-map", "a:0", "-c:a:0", "aac", "-b:a:0", "192k",
+
+                // 720p Stream
+                "-map", "[v2out]", "-c:v:1", "libx264", "-b:v:1", "2800k", "-maxrate:v:1", "2996k", "-bufsize:v:1", "4200k",
+                "-map", "a:0", "-c:a:1", "aac", "-b:a:1", "128k",
+
+                // 480p Stream
+                "-map", "[v3out]", "-c:v:2", "libx264", "-b:v:2", "1400k", "-maxrate:v:2", "1498k", "-bufsize:v:2", "2100k",
+                "-map", "a:0", "-c:a:2", "aac", "-b:a:2", "128k",
+
+                "-f", "hls",
+                "-hls_time", "10",
+                "-hls_playlist_type", "vod",
+                "-hls_flags", "independent_segments",
+                "-hls_segment_filename", segmentFilename,
+                "-master_pl_name", "master.m3u8",
+                "-var_stream_map", "v:0,a:0 v:1,a:1 v:2,a:2",
+                outputDir.getAbsolutePath() + "/stream_%v.m3u8"
+        );
+
+        runProcess(pb);
+        return "master.m3u8"; // Return filename only (relative)
+    }
+
+    // --- TASK 2: THUMBNAIL ---
+    private String generateThumbnail(File input, File outputDir) throws IOException, InterruptedException {
+        String filename = "thumbnail.jpg";
+        File target = new File(outputDir, filename);
+
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffmpeg", "-y",
+                "-ss", "00:01:00", // Seek to 5th second
+                "-i", input.getAbsolutePath(),
+                "-vframes", "1", // Take 1 frame
+                "-q:v", "2", // High quality jpg
+                target.getAbsolutePath()
+        );
+
+        runProcess(pb);
+        return filename;
+    }
+
+    // --- TASK 3: 5-SEC PREVIEW (GIF/WebP) ---
+    private String generatePreviewGif(File input, File outputDir) throws IOException, InterruptedException {
+        String filename = "preview.gif"; // WebP is better, but GIF is universally supported
+        File target = new File(outputDir, filename);
+
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffmpeg", "-y",
+                "-ss", "00:01:00", // Start at 10s
+                "-t", "5",         // Duration 5s
+                "-i", input.getAbsolutePath(),
+                "-vf", "fps=10,scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
+                "-loop", "0",
+                target.getAbsolutePath()
+        );
+
+        runProcess(pb);
+        return filename;
+    }
+
+    private void runProcess(ProcessBuilder pb) throws IOException, InterruptedException {
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                log.debug(line); // Don't flood Info logs with FFmpeg output
+            }
+        }
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new IOException("FFmpeg process failed with exit code " + exitCode);
         }
     }
 }

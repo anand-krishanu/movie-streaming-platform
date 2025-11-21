@@ -1,18 +1,16 @@
 package com.anand.backend.controller;
 
 import com.anand.backend.entity.User;
-import com.anand.backend.entity.WatchHistory;
-import com.anand.backend.entity.WatchLater;
 import com.anand.backend.repository.UserRepository;
 import com.anand.backend.service.UserService;
+import com.google.firebase.auth.FirebaseToken; // Import Firebase
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -21,16 +19,32 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserRepository userRepository;
-
     private final UserService userService;
 
-    @GetMapping("/user")
-    public User getCurrentUser(@AuthenticationPrincipal OAuth2User principal) {
-        if (principal == null) return null;
+    // --- 1. SYNC ENDPOINT (Called by React 'upsertUser') ---
+    @PostMapping("/sync")
+    public ResponseEntity<Map<String, Object>> syncUser(@AuthenticationPrincipal Object principal) {
+        // The Filter sets the principal as a FirebaseToken object
+        FirebaseToken token = (FirebaseToken) principal;
 
-        String email = principal.getAttribute("email");
-        Optional<User> user = userRepository.findByEmail(email);
-        return user.orElse(null);
+        User user = userService.syncUser(token);
+
+        return ResponseEntity.ok(Map.of(
+                "user", user,
+                "isNewUser", false,
+                "message", "User synced successfully"
+        ));
+    }
+
+    // --- 2. GET CURRENT USER ---
+    @GetMapping("/user")
+    public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal Object principal) {
+        FirebaseToken token = (FirebaseToken) principal;
+        if (token == null) return ResponseEntity.status(401).build();
+
+        return userRepository.findByEmail(token.getEmail())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping

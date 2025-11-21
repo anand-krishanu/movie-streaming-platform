@@ -1,53 +1,63 @@
-import axios from "./axiosInstance";
+import axiosInstance from "./axiosInstance";
 
 const movieApi = {
-	// list movies with pagination: { page, limit }
-	fetchMovies: async ({ page = 1, limit = 24 } = {}) => {
-		const res = await axios.get(`/movies?page=${page}&limit=${limit}`);
-		return res.data;
-	},
+  // Get all movies with pagination
+  fetchMovies: async ({ page = 0, size = 10 } = {}) => {
+    const res = await axiosInstance.get(`/movies`, {
+      params: { page, size }
+    });
+    return res.data;
+  },
 
-	getMovieById: async (id) => {
-		const res = await axios.get(`/movies/${id}`);
-		return res.data;
-	},
+  // Get single movie by ID
+  getMovieById: async (id) => {
+    const res = await axiosInstance.get(`/movies/${id}`);
+    return res.data;
+  },
 
-	searchMovies: async (q) => {
-		const res = await axios.get(`/movies/search?q=${encodeURIComponent(q || "")}`);
-		return res.data;
-	},
+  // Search movies by title
+  searchMovies: async (title) => {
+    const res = await axiosInstance.get(`/movies/search`, {
+      params: { title, page: 0, size: 50 }
+    });
+    return res.data;
+  },
 
-	getTopRated: async () => {
-		const res = await axios.get(`/movies/aggregate/top-rated`);
-		return res.data;
-	},
+  // Filter movies by genre
+  filterByGenre: async (genre, page = 0, size = 50) => {
+    const res = await axiosInstance.get(`/movies/filter`, {
+      params: { genre, page, size }
+    });
+    return res.data;
+  },
 
-	// Aggregations
-	getByGenreAggregate: async () => {
-		const res = await axios.get(`/movies/aggregate/by-genre`);
-		return res.data;
-	},
+  // Upload movie (admin)
+  uploadMovie: async (formData) => {
+    const res = await axiosInstance.post(`/movies/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return res.data;
+  },
 
-	getStatsAggregate: async () => {
-		const res = await axios.get(`/movies/aggregate/stats`);
-		return res.data;
-	},
+  // Delete movie (admin)
+  deleteMovie: async (id) => {
+    const res = await axiosInstance.delete(`/movies/${id}`);
+    return res.data;
+  },
 
-	// admin style mutators (left for future use)
-	createMovie: async (payload) => {
-		const res = await axios.post(`/movies`, payload);
-		return res.data;
-	},
+  // Get streaming URL
+  getStreamUrl: (movieId) => {
+    const baseURL = axiosInstance.defaults.baseURL;
+    return `${baseURL}/movies/stream/${movieId}/master.m3u8`;
+  },
 
-	updateMovie: async (id, payload) => {
-		const res = await axios.put(`/movies/${id}`, payload);
-		return res.data;
-	},
-
-	deleteMovie: async (id) => {
-		const res = await axios.delete(`/movies/${id}`);
-		return res.data;
-	},
+  // Test endpoint
+  hello: async () => {
+    const res = await axiosInstance.get(`/movies/hello`);
+    return res.data;
+  }
 };
 
 export default movieApi;

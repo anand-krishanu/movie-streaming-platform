@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import MovieGrid from "../../components/MovieGrid";
-import userApi from "../../api/userApi";
+import movieApi from "../../api/movieApi";
 import useAuthStore from "../../context/useAuthStore";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 export default function Watchlist() {
   const [loading, setLoading] = useState(true);
-  const { dbUser, userData, refreshUserData, updateWatchLater } = useAuthStore();
+  const [watchLaterMovies, setWatchLaterMovies] = useState([]);
+  const { dbUser, userData, refreshUserData } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +28,19 @@ export default function Watchlist() {
     }
 
     try {
+      // Refresh user data to get latest watchLaterMovieIds
       await refreshUserData();
+      
+      // Fetch full movie details for each watch later movie ID
+      const watchLaterIds = userData?.watchLaterMovieIds || [];
+      
+      if (watchLaterIds.length > 0) {
+        const moviePromises = watchLaterIds.map(id => movieApi.getMovieById(id));
+        const movies = await Promise.all(moviePromises);
+        setWatchLaterMovies(movies.filter(movie => movie !== null));
+      } else {
+        setWatchLaterMovies([]);
+      }
     } catch (error) {
       console.error("Error fetching watch later:", error);
       toast.error("Failed to load watch later list");
@@ -36,7 +49,28 @@ export default function Watchlist() {
     }
   };
 
-  const watchLaterMovies = userData?.watchLater || [];
+  // Refetch when userData changes (e.g., when watch later is toggled)
+  useEffect(() => {
+    if (userData?.watchLaterMovieIds) {
+      const fetchMovieDetails = async () => {
+        const watchLaterIds = userData.watchLaterMovieIds;
+        
+        if (watchLaterIds.length > 0) {
+          try {
+            const moviePromises = watchLaterIds.map(id => movieApi.getMovieById(id));
+            const movies = await Promise.all(moviePromises);
+            setWatchLaterMovies(movies.filter(movie => movie !== null));
+          } catch (error) {
+            console.error("Error fetching movie details:", error);
+          }
+        } else {
+          setWatchLaterMovies([]);
+        }
+      };
+      
+      fetchMovieDetails();
+    }
+  }, [userData?.watchLaterMovieIds]);
 
   if (loading) {
     return (

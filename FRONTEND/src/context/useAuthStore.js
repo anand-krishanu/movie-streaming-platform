@@ -6,97 +6,78 @@ import userApi from "../api/userApi";
 const useAuthStore = create(
   persist(
     (set, get) => ({
-      user: null,
-      dbUser: null,
-      userData: null, // Full user data with populated favorites/watchLater
+      user: null,           // Firebase user
+      dbUser: null,         // MongoDB user from Spring Boot
+      userData: null,       // Full user data with favorites/watchLater
+
+      // Login action - called after Firebase authentication
       setUser: async (firebaseUser) => {
         set({ user: firebaseUser });
-        
-        // Save Firebase user to MongoDB
+
         if (firebaseUser) {
           try {
-            const response = await userApi.upsertUser({
-              email: firebaseUser.email,
-              name: firebaseUser.displayName || firebaseUser.email,
-              picture: firebaseUser.photoURL
-            });
+            // Sync user with Spring Boot backend
+            const response = await userApi.syncUser();
+            set({ dbUser: response, userData: response });
             
-            set({ dbUser: response.user });
-            
-            // Fetch full user data with populated movies
-            await get().refreshUserData();
-            
-            // Log whether it's a new or returning user
-            if (response.isNewUser) {
-              console.log("🎉 New user created:", response.message);
-            } else {
-              console.log("👋 Returning user:", response.message);
-            }
+            console.log("✅ User synced with backend:", response);
             
           } catch (error) {
-            console.error("Failed to save user to database:", error);
+            console.error("❌ Failed to sync user with backend:", error);
             
-            // Simple fallback without retry mechanism
+            // Fallback for offline mode
             const fallbackDbUser = {
               _id: firebaseUser.uid,
               email: firebaseUser.email,
               name: firebaseUser.displayName || firebaseUser.email,
               picture: firebaseUser.photoURL,
-              favorites: [],
-              watchLater: [],
+              favoriteMovieIds: [],
+              watchLaterMovieIds: [],
               _isFallback: true
             };
-            set({ dbUser: fallbackDbUser });
+            set({ dbUser: fallbackDbUser, userData: fallbackDbUser });
           }
         }
       },
+
+      // Refresh user data from backend
       refreshUserData: async () => {
-        const { dbUser } = get();
-        if (!dbUser || dbUser._isFallback) return null;
-        
         try {
-          const userData = await userApi.getUser(dbUser._id);
-          set({ userData });
+          const userData = await userApi.getCurrentUser();
+          set({ userData, dbUser: userData });
           return userData;
         } catch (error) {
           console.error("Failed to refresh user data:", error);
           return null;
         }
       },
-      updateFavorites: (movieId, isAdd = true) => {
-        const { userData } = get();
-        if (!userData) return;
-        
-        const updatedFavorites = isAdd 
-          ? [...(userData.favorites || [])]
-          : (userData.favorites || []).filter(movie => movie._id !== movieId);
-          
-        set({ 
-          userData: { 
-            ...userData, 
-            favorites: updatedFavorites 
-          } 
-        });
+
+      // Toggle favorite (handles add/remove automatically)
+      toggleFavorite: async (movieId) => {
+        try {
+          await userApi.toggleFavorite(movieId);
+          // Refresh user data to get updated favorites
+          await get().refreshUserData();
+        } catch (error) {
+          console.error("Failed to toggle favorite:", error);
+        }
       },
-      updateWatchLater: (movieId, isAdd = true) => {
-        const { userData } = get();
-        if (!userData) return;
-        
-        const updatedWatchLater = isAdd 
-          ? [...(userData.watchLater || [])]
-          : (userData.watchLater || []).filter(movie => movie._id !== movieId);
-          
-        set({ 
-          userData: { 
-            ...userData, 
-            watchLater: updatedWatchLater 
-          } 
-        });
+
+      // Toggle watch later (handles add/remove automatically)
+      toggleWatchLater: async (movieId) => {
+        try {
+          await userApi.toggleWatchLater(movieId);
+          // Refresh user data to get updated watch later list
+          await get().refreshUserData();
+        } catch (error) {
+          console.error("Failed to toggle watch later:", error);
+        }
       },
+
       clearUser: () => set({ user: null, dbUser: null, userData: null }),
     }),
     {
-      name: "auth-storage", // localStorage key
+      name: "auth-storage", // Persist to localStorage
     }
   )
 );

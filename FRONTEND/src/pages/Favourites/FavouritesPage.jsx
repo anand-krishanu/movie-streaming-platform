@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import MovieGrid from "../../components/MovieGrid";
-import userApi from "../../api/userApi";
+import movieApi from "../../api/movieApi";
 import useAuthStore from "../../context/useAuthStore";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 export default function FavouritesPage() {
   const [loading, setLoading] = useState(true);
-  const { dbUser, userData, refreshUserData, updateFavorites } = useAuthStore();
+  const [favoriteMovies, setFavoriteMovies] = useState([]);
+  const { dbUser, userData, refreshUserData } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +28,19 @@ export default function FavouritesPage() {
     }
 
     try {
+      // Refresh user data to get latest favoriteMovieIds
       await refreshUserData();
+      
+      // Fetch full movie details for each favorite movie ID
+      const favoriteIds = userData?.favoriteMovieIds || [];
+      
+      if (favoriteIds.length > 0) {
+        const moviePromises = favoriteIds.map(id => movieApi.getMovieById(id));
+        const movies = await Promise.all(moviePromises);
+        setFavoriteMovies(movies.filter(movie => movie !== null));
+      } else {
+        setFavoriteMovies([]);
+      }
     } catch (error) {
       console.error("Error fetching favorites:", error);
       toast.error("Failed to load favorites");
@@ -36,7 +49,28 @@ export default function FavouritesPage() {
     }
   };
 
-  const favoriteMovies = userData?.favorites || [];
+  // Refetch when userData changes (e.g., when a favorite is toggled)
+  useEffect(() => {
+    if (userData?.favoriteMovieIds) {
+      const fetchMovieDetails = async () => {
+        const favoriteIds = userData.favoriteMovieIds;
+        
+        if (favoriteIds.length > 0) {
+          try {
+            const moviePromises = favoriteIds.map(id => movieApi.getMovieById(id));
+            const movies = await Promise.all(moviePromises);
+            setFavoriteMovies(movies.filter(movie => movie !== null));
+          } catch (error) {
+            console.error("Error fetching movie details:", error);
+          }
+        } else {
+          setFavoriteMovies([]);
+        }
+      };
+      
+      fetchMovieDetails();
+    }
+  }, [userData?.favoriteMovieIds]);
 
   if (loading) {
     return (

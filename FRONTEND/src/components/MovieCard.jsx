@@ -8,17 +8,17 @@ import { toast } from "react-toastify";
 const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [watchLaterLoading, setWatchLaterLoading] = useState(false);
-  const { dbUser, userData, updateFavorites, updateWatchLater } = useAuthStore();
+  const { dbUser, userData, toggleFavorite, toggleWatchLater } = useAuthStore();
 
-  const isInFavorites = userData?.favorites?.some(fav => fav._id === (movie._id || movie.id));
-  const isInWatchLater = userData?.watchLater?.some(wl => wl._id === (movie._id || movie.id));
+  const isInFavorites = userData?.favoriteMovieIds?.includes(movie._id || movie.id);
+  const isInWatchLater = userData?.watchLaterMovieIds?.includes(movie._id || movie.id);
 
   const handleFavoriteClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (!dbUser || dbUser._isFallback) {
-      toast.warning("Please refresh the page to reconnect to the database.");
+      toast.warning("Please login to add favorites.");
       return;
     }
     
@@ -27,16 +27,9 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
     setFavoriteLoading(true);
     try {
       const movieId = movie._id || movie.id;
+      await toggleFavorite(movieId);
       
-      if (isInFavorites) {
-        await userApi.removeFavorite(dbUser._id, movieId);
-        updateFavorites(movieId, false);
-        toast.success("Removed from favorites! 💔");
-      } else {
-        await userApi.addFavorite(dbUser._id, movieId);
-        updateFavorites(movieId, true);
-        toast.success("Added to favorites! ❤️");
-      }
+      toast.success(isInFavorites ? "Removed from favorites! 💔" : "Added to favorites! ❤️");
     } catch (error) {
       console.error("Error toggling favorite:", error);
       toast.error("Failed to update favorites");
@@ -50,7 +43,7 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
     e.stopPropagation();
     
     if (!dbUser || dbUser._isFallback) {
-      toast.warning("Please refresh the page to reconnect to the database.");
+      toast.warning("Please login to add to watch later.");
       return;
     }
     
@@ -59,16 +52,9 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
     setWatchLaterLoading(true);
     try {
       const movieId = movie._id || movie.id;
+      await toggleWatchLater(movieId);
       
-      if (isInWatchLater) {
-        await userApi.removeWatchLater(dbUser._id, movieId);
-        updateWatchLater(movieId, false);
-        toast.success("Removed from watch later! 🗑️");
-      } else {
-        await userApi.addWatchLater(dbUser._id, movieId);
-        updateWatchLater(movieId, true);
-        toast.success("Added to watch later! 🕒");
-      }
+      toast.success(isInWatchLater ? "Removed from watch later! 🗑️" : "Added to watch later! 🕒");
     } catch (error) {
       console.error("Error toggling watch later:", error);
       toast.error("Failed to update watch later");

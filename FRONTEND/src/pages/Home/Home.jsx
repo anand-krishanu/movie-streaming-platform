@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import GenreRow from "../../components/GenreRow";
 import MovieCarousel from "../../components/MovieCarousel";
-import userApi from "../../api/userApi";
+import movieApi from "../../api/movieApi";
 import useAuthStore from "../../context/useAuthStore";
 import { toast } from "react-toastify";
 
@@ -13,19 +13,28 @@ export default function Home() {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        // Use the backend aggregation endpoint that properly handles multiple genres
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/movies/aggregate/by-genre`);
-        const data = await res.json();
+        // Fetch all movies with a large page size to get most movies
+        const response = await movieApi.fetchMovies(0, 100);
+        const movies = response.content;
 
-        // Convert aggregation result to the expected format
-        const grouped = data.reduce((acc, genreGroup) => {
-          acc[genreGroup._id] = genreGroup.movies;
-          return acc;
-        }, {});
+        // Group movies by genre on the client side
+        // Each movie can appear in multiple genre rows
+        const grouped = {};
+        movies.forEach(movie => {
+          if (movie.genre && Array.isArray(movie.genre)) {
+            movie.genre.forEach(genre => {
+              if (!grouped[genre]) {
+                grouped[genre] = [];
+              }
+              grouped[genre].push(movie);
+            });
+          }
+        });
         
         setMoviesByGenre(grouped);
       } catch (err) {
         console.error("Error fetching movies:", err);
+        toast.error("Failed to load movies");
       }
     };
 

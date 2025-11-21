@@ -1,8 +1,9 @@
 package com.anand.backend.controller;
 
 import com.anand.backend.entity.Movie;
-import com.anand.backend.enums.Genre;
 import com.anand.backend.service.MovieService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -17,26 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.util.List;
 
-/**
- * REST Controller that handles all HTTP requests related to movies.
- * <p>
- * Provides endpoints for:
- * <ul>
- *     <li>Uploading movie files with metadata</li>
- *     <li>Retrieving movies and details</li>
- *     <li>Deleting movies</li>
- *     <li>Streaming HLS-encoded video content</li>
- * </ul>
- *
- * <p>This controller works in conjunction with {@link MovieService} and
- * {@link com.anand.backend.service.VideoProcessingService} to manage
- * video lifecycle operations and provide video streaming capabilities.</p>
- *
- * <p>Base URL: <b>/api/movies</b></p>
- *
- * @author Krishanu
- * @since 2025
- */
+@Slf4j
 @RestController
 @RequestMapping("/api/movies")
 public class MovieController {
@@ -44,129 +26,46 @@ public class MovieController {
     @Autowired
     private MovieService movieService;
 
-    /**
-     * Directory where processed (HLS) videos are stored.
-     * Configured in {@code application.properties} as {@code video.processed.dir}.
-     */
-    @Value("${video.processed.dir}")
+    @Value("${video.processed.dir:processed}")
     private String processedDir;
 
-    /**
-     * Basic test endpoint to verify the API is running.
-     *
-     * @return A simple "Hello World" response.
-     */
     @GetMapping("/hello")
     public String hello() {
-        return "Hello World";
+        return "Hello Worldies";
     }
 
-    /**
-     * Handles video upload requests and triggers the FFmpeg conversion process.
-     * <p>
-     * Accepts a multipart request containing both metadata and the raw video file.
-     * Once uploaded, the file is processed and stored, and metadata is persisted in MongoDB.
-     * </p>
-     *
-     * @param title        Movie title
-     * @param description  Short description or synopsis
-     * @param length       Duration (e.g., "2h 30m")
-     * @param imdbRating   IMDB rating (e.g., "8.9")
-     * @param genre        Movie genre (e.g., "Drama", "Action")
-     * @param file         Video file (MP4 or any FFmpeg-compatible format)
-     * @return ResponseEntity containing the saved {@link Movie} object
-     */
+    // --------------------------------------------------------
+    // UPLOAD MOVIE
+    // --------------------------------------------------------
     @PostMapping("/upload")
     public ResponseEntity<Movie> uploadMovie(
             @RequestParam("title") String title,
             @RequestParam("description") String description,
-            @RequestParam("length") String length,
-            @RequestParam("imdb") String imdbRating,
-            @RequestParam("genre") Genre genre,
+            @RequestParam("imdbRating") Double imdbRating, // Changed to Double
+            @RequestParam("genres") List<String> genres,   // Changed to List<String>
             @RequestParam("file") MultipartFile file
     ) {
         try {
-            Movie saved = movieService.saveMovie(title, description, length, imdbRating, genre, file);
+            // Note: 'length' and 'language' were removed to match the Service signature
+            // We calculate length automatically via FFmpeg in a real app
+            Movie saved = movieService.uploadMovie(
+                    title,
+                    description,
+                    imdbRating,
+                    genres,
+                    file
+            );
             return ResponseEntity.ok(saved);
+
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error uploading movie", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    /**
-     * Retrieves a list of all movies stored in the database.
-     *
-     * @return List of all {@link Movie} objects
-     */
-    @GetMapping
-    public List<Movie> getMovies() {
-        return movieService.getAllMovies();
-    }
-
-    /**
-     * Retrieves details for a specific movie by its unique ID.
-     *
-     * @param id Movie's MongoDB ID
-     * @return {@link Movie} object if found, otherwise 404
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<Movie> getMovieById(@PathVariable String id) {
-        Movie movie = movieService.getMovieById(id);
-        return movie != null ? ResponseEntity.ok(movie) : ResponseEntity.notFound().build();
-    }
-
-    /**
-     * Deletes a movie entry and removes the corresponding video file.
-     *
-     * @param id Movie ID to delete
-     * @return HTTP 204 (No Content) on success
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMovie(@PathVariable String id) {
-        movieService.deleteMovie(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Streams HLS video files (.m3u8 playlists and .ts segments) to clients.
-     * <p>
-     * This endpoint serves the processed video segments, allowing
-     * video players (like VLC, React video.js, etc.) to stream
-     * adaptive content seamlessly over HTTP.
-     * </p>
-     *
-     * @param movieId  Movie ID folder name in processed directory
-     * @param fileName File name within that directory (index.m3u8 or segment.ts)
-     * @return HTTP 200 with video resource stream if found; 404 otherwise
-     */
-    @GetMapping("/stream/{movieId}/{fileName:.+}")
-    public ResponseEntity<Resource> streamHLS(
-            @PathVariable String movieId,
-            @PathVariable String fileName
-    ) {
-        File file = new File(processedDir + "/" + movieId + "/" + fileName);
-
-        if (!file.exists()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        FileSystemResource resource = new FileSystemResource(file);
-
-        HttpHeaders headers = new HttpHeaders();
-        if (fileName.endsWith(".m3u8")) {
-            headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.apple.mpegurl");
-        } else if (fileName.endsWith(".ts")) {
-            headers.add(HttpHeaders.CONTENT_TYPE, "video/MP2T");
-        } else {
-            headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
-        }
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource);
-    }
-
+    // --------------------------------------------------------
+    // GET ALL MOVIES (PAGINATED)
+    // --------------------------------------------------------
     @GetMapping
     public Page<Movie> getAllMovies(
             @RequestParam(defaultValue = "0") int page,
@@ -175,7 +74,95 @@ public class MovieController {
         return movieService.getAllMovies(page, size);
     }
 
-    // Optional search
+    // --------------------------------------------------------
+    // GET MOVIE BY ID
+    // --------------------------------------------------------
+    @GetMapping("/{id}")
+    public ResponseEntity<Movie> getMovieById(@PathVariable String id) {
+        Movie movie = movieService.getMovieById(id);
+        return movie != null ? ResponseEntity.ok(movie) : ResponseEntity.notFound().build();
+    }
+
+    // --------------------------------------------------------
+    // DELETE MOVIE
+    // --------------------------------------------------------
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteMovie(@PathVariable String id) {
+        movieService.deleteMovie(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // --------------------------------------------------------
+    // HLS STREAMING ENDPOINT
+    // Serves .m3u8, .ts segments, and images
+    // --------------------------------------------------------
+    @GetMapping("/stream/{movieId}/**")
+    public ResponseEntity<Resource> streamHLS(
+            @PathVariable String movieId,
+            HttpServletRequest request
+    ) {
+        try {
+            // Logic: /api/movies/stream/{movieId}/master.m3u8 -> maps to -> processedDir/{movieId}/master.m3u8
+            String fullPath = request.getRequestURI();
+            String prefix = "/api/movies/stream/" + movieId + "/";
+            int index = fullPath.indexOf(prefix);
+
+            if (index < 0) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Extract the part after the ID (e.g., "master.m3u8" or "segment_001.ts")
+            String relativePath = fullPath.substring(index + prefix.length());
+
+            // Security: Prevent Path Traversal (e.g. ../../windows/system32)
+            if (relativePath.contains("..")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            File file = new File(processedDir + "/" + movieId + "/" + relativePath);
+
+            if (!file.exists()) {
+                // log.warn("File not found: {}", file.getAbsolutePath()); // Optional logging
+                return ResponseEntity.notFound().build();
+            }
+
+            FileSystemResource resource = new FileSystemResource(file);
+            HttpHeaders headers = new HttpHeaders();
+
+            // Set correct Content-Type
+            if (relativePath.endsWith(".m3u8")) {
+                headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.apple.mpegurl");
+            } else if (relativePath.endsWith(".ts")) {
+                headers.add(HttpHeaders.CONTENT_TYPE, "video/MP2T");
+            } else if (relativePath.endsWith(".vtt")) {
+                headers.add(HttpHeaders.CONTENT_TYPE, "text/vtt");
+            } else if (relativePath.endsWith(".jpg") || relativePath.endsWith(".jpeg")) {
+                headers.add(HttpHeaders.CONTENT_TYPE, "image/jpeg");
+            } else if (relativePath.endsWith(".gif")) {
+                headers.add(HttpHeaders.CONTENT_TYPE, "image/gif");
+            } else {
+                headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
+            }
+
+            // Enable CORS for video player access (Important for HLS)
+            headers.add("Access-Control-Allow-Origin", "*");
+            headers.add("Access-Control-Expose-Headers", "Content-Length");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
+
+        } catch (Exception e) {
+            log.error("Error streaming file", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // --------------------------------------------------------
+    // SEARCH & FILTER
+    // --------------------------------------------------------
+
+    // Search by Title
     @GetMapping("/search")
     public Page<Movie> searchMovies(
             @RequestParam String title,
@@ -185,14 +172,15 @@ public class MovieController {
         return movieService.searchMovies(title, page, size);
     }
 
+    // Filter by Genre (String matching)
     @GetMapping("/filter")
     public Page<Movie> filterMovies(
             @RequestParam(required = false) String genre,
-            @RequestParam(required = false) String language,
-            @RequestParam(required = false) Integer year,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return movieService.filterMovies(genre, language, year, page, size);
+        // Note: We removed 'language' from the Service args in previous steps
+        // If you need language, you must add it back to Repository and Service
+        return movieService.filterMovies(genre, page, size);
     }
 }

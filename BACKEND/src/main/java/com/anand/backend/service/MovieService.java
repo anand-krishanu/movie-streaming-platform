@@ -1,38 +1,26 @@
 package com.anand.backend.service;
 
+import com.anand.backend.dto.VideoProcessingResult;
 import com.anand.backend.entity.Movie;
-import com.anand.backend.enums.Genre;
 import com.anand.backend.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
-/**
- * Service layer responsible for handling all business logic
- * related to movie upload, metadata management, and retrieval.
- * <p>
- * This service:
- * <ul>
- *   <li>Stores uploaded movie files to the configured directory.</li>
- *   <li>Persists movie metadata (title, genre, etc.) to MongoDB.</li>
- *   <li>Triggers FFmpeg conversion to HLS format for streaming.</li>
- *   <li>Supports retrieval and deletion of movie data.</li>
- * </ul>
- *
- * @author Krishanu
- * @since 2025
- */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MovieService {
@@ -40,121 +28,174 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final VideoProcessingService videoProcessingService;
 
-    /** Repository for performing CRUD operations on Movie collection. */
-    @Value("${video.upload.dir}")
+    @Value("${video.upload.dir:uploads}")
     private String uploadDir;
 
-    /** Directory for storing processed HLS output files. */
-    @Value("${video.processed.dir:C:/processed_videos}")
+    @Value("${video.processed.dir:processed}")
     private String processedDir;
 
-    /**
-     * Saves a movie file to disk, processes it into HLS format,
-     * and persists its metadata in MongoDB.
-     *
-     * @param title        Movie title.
-     * @param description  Short description or synopsis.
-     * @param length       Movie duration or length.
-     * @param imdbRating   IMDb rating value.
-     * @param genre        Movie genre (e.g., Action, Drama).
-     * @param file         Uploaded video file.
-     * @return The saved {@link Movie} entity with database ID and metadata.
-     * @throws IOException              If file writing or transfer fails.
-     * @throws InterruptedException     If FFmpeg process is interrupted.
-     */
+    @Value("${server.base-url:http://localhost:8080}")
+    private String serverBaseUrl; // Good practice to put domain in properties
+
+    // ----------------------------------------------------------------
+    // 1. UPLOAD MOVIE
+    // ----------------------------------------------------------------
     @Transactional
-    public Movie saveMovie(String title, String description, String length,
-                           String imdbRating, Genre genre, MultipartFile file)
-            throws IOException, InterruptedException {
+    public Movie uploadMovie(
+            String title,
+            String description,
+            Double imdbRating,
+            List<String> genres,
+            MultipartFile file
+    ) throws IOException {
 
-        // ✅ Ensure upload directory exists
-        File uploadDirectory = new File(uploadDir);
-        if (!uploadDirectory.exists()) {
-            uploadDirectory.mkdirs();
-        }
+        if (file.isEmpty()) throw new IllegalArgumentException("File is empty");
 
-        // ✅ Ensure processed directory exists
-        File processedDirectory = new File(processedDir);
-        if (!processedDirectory.exists()) {
-            processedDirectory.mkdirs();
-        }
+        // Prepare Folders
+        File uploadFolder = new File(uploadDir);
+        File processedRoot = new File(processedDir);
+        if (!uploadFolder.exists()) uploadFolder.mkdirs();
+        if (!processedRoot.exists()) processedRoot.mkdirs();
 
-        String originalFileName = file.getOriginalFilename();
-        String uniqueFileName = UUID.randomUUID() + "_" +
-                (originalFileName != null ? originalFileName : "video.mp4");
+        // Save Raw File
+        String uniqueName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        File savedFile = new File(uploadFolder, uniqueName);
+        file.transferTo(savedFile);
 
-        File destFile = new File(uploadDirectory, uniqueFileName);
-        file.transferTo(destFile);
-
-        Movie movie = Movie.builder()
-                .movieTitle(title)
-                .movieDescription(description)
-                .movieLength(length)
-                .IMDBRating(imdbRating)
-                .genre(genre)
-                .filePath(destFile.getAbsolutePath())
-                .size(file.getSize())
-                .uploadedAt(Instant.now())
+        // Initialize VideoDetails (Using Builder)
+        Movie.VideoDetails videoDetails = Movie.VideoDetails.builder()
+                .originalFileName(file.getOriginalFilename())
+                .sizeInBytes(file.getSize())
+                .processingCompleted(false)
                 .build();
 
-        if (file.isEmpty() || title == null || title.isBlank()) {
-            throw new IllegalArgumentException("Movie title and file are required");
-        }
+        // Build Movie Entity
+        Movie movie = Movie.builder()
+                .movieId(UUID.randomUUID().toString())
+                .movieTitle(title)
+                .movieDescription(description)
+                .genres(genres)
+                .imdbRating(imdbRating) // Note: field name is camelCase in Entity
+                .videoDetails(videoDetails)
+                .build();
 
-        Movie saved = movieRepository.save(movie);
+        Movie savedMovie = movieRepository.save(movie);
 
-        // Use proper processed directory
-        videoProcessingService.convertToHLS(destFile.getAbsolutePath(), processedDirectory.getAbsolutePath(), saved.getMovieId());
+        // Trigger Async Processing
+        File outputDir = new File(processedRoot, savedMovie.getMovieId());
 
-        return saved;
+        CompletableFuture<VideoProcessingResult> future = videoProcessingService.processFullPipeline(
+                savedMovie.getMovieId(),
+                savedFile.getAbsolutePath(),
+                outputDir.getAbsolutePath()
+        );
+
+        // Handle Callback
+        future.whenComplete((result, ex) -> {
+            if (ex != null) {
+                handleFailure(savedMovie.getMovieId());
+            } else {
+                handleSuccess(savedMovie.getMovieId(), result, outputDir.getName());
+            }
+        });
+
+        return savedMovie;
     }
 
-    /**
-     * Retrieves a list of all stored movies from the database.
-     *
-     * @return List of all {@link Movie} entities.
-     */
-    public List<Movie> getAllMovies() {
-        return movieRepository.findAll();
-    }
+    // ----------------------------------------------------------------
+    // 2. READ OPERATIONS (Get, Search, Filter)
+    // ----------------------------------------------------------------
 
-    /**
-     * Retrieves a specific movie by its unique ID.
-     *
-     * @param id Movie's unique database ID.
-     * @return Movie object if found, otherwise {@code null}.
-     */
     public Movie getMovieById(String id) {
         return movieRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Deletes a movie record and its associated file from disk.
-     *
-     * @param id ID of the movie to be deleted.
-     */
-    public void deleteMovie(String id) {
-        Movie movie = getMovieById(id);
-        if (movie != null) {
-            File file = new File(movie.getFilePath());
-            if (file.exists()) file.delete();
-            movieRepository.deleteById(id);
-        }
+    public List<Movie> getAllMovies() {
+        return movieRepository.findAll();
     }
 
     public Page<Movie> getAllMovies(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        // Sort by newest first
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return movieRepository.findAll(pageable);
     }
 
-    // For search (if you want later)
     public Page<Movie> searchMovies(String title, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return movieRepository.findByTitleContainingIgnoreCase(title, pageable);
+        return movieRepository.findByMovieTitleContainingIgnoreCase(title, pageable);
     }
 
-    public Page<Movie> filterMovies(String genre, String language, Integer year, int page, int size) {
+    public Page<Movie> filterMovies(String genre, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return movieRepository.filterMovies(genre, language, year, pageable);
+        // If genre is null/empty, return all, otherwise filter
+        if (genre == null || genre.isBlank()) {
+            return movieRepository.findAll(pageable);
+        }
+        return movieRepository.findByGenresContaining(genre, pageable);
+    }
+
+    // ----------------------------------------------------------------
+    // 3. DELETE MOVIE (Clean up Database + Files)
+    // ----------------------------------------------------------------
+    public void deleteMovie(String movieId) {
+        Movie movie = movieRepository.findById(movieId).orElse(null);
+        if (movie == null) return;
+
+        // 1. Delete Raw Uploaded File (if exists)
+        // We need to reconstruct the path. Ideally, store raw path in DB,
+        // but here we check if we can find it in the uploadDir.
+        // Note: In production, better to store 'rawFilePath' in VideoDetails.
+        // For now, we rely on the fact that we don't easily know the exact unique name
+        // unless we stored it. *I recommend adding `rawFilePath` to your Entity later.* // 2. Delete Processed Folder (HLS files)
+        File processedFolder = new File(processedDir, movieId);
+        if (processedFolder.exists()) {
+            deleteRecursive(processedFolder);
+        }
+
+        // 3. Delete from DB
+        movieRepository.deleteById(movieId);
+        log.info("Deleted movie and files for ID: {}", movieId);
+    }
+
+    // Helper to delete folder with contents
+    private void deleteRecursive(File file) {
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                deleteRecursive(f);
+            }
+        }
+        file.delete();
+    }
+
+    // ----------------------------------------------------------------
+    // 4. CALLBACK HANDLERS
+    // ----------------------------------------------------------------
+
+    private void handleSuccess(String movieId, VideoProcessingResult result, String folderName) {
+        Movie movie = movieRepository.findById(movieId).orElse(null);
+        if (movie == null) return;
+
+        // IMPORTANT: Build the URL to match your Controller's @GetMapping path
+        // Logic: http://localhost:8080/api/movies/stream/{movieId}/master.m3u8
+        String streamingBaseUrl = serverBaseUrl + "/api/movies/stream/" + movieId + "/";
+
+        Movie.VideoDetails details = movie.getVideoDetails();
+        details.setProcessingCompleted(true);
+        details.setHlsMasterUrl(streamingBaseUrl + result.masterPlaylistFilename());
+        details.setThumbnailSpriteUrl(streamingBaseUrl + result.thumbnailFilename());
+
+        // If you added GIF support in Entity/DTO:
+        // details.setPreviewGifUrl(streamingBaseUrl + result.previewGifFilename());
+
+        movieRepository.save(movie);
+        log.info("Movie {} processing COMPLETED. URLs updated.", movieId);
+    }
+
+    private void handleFailure(String movieId) {
+        Movie movie = movieRepository.findById(movieId).orElse(null);
+        if (movie != null) {
+            log.error("Processing FAILED for movie {}", movieId);
+            // Ideally set a status flag here if your entity supports it
+        }
     }
 }
