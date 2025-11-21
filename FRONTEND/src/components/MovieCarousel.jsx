@@ -17,9 +17,9 @@ const MovieCarousel = () => {
   useEffect(() => {
     const fetchRandomMovies = async () => {
       try {
-        // Fetch all movies and pick 3 random ones
-        const response = await movieApi.fetchMovies();
-        const allMovies = response.movies || [];
+        // Fetch movies with a reasonable page size to get variety for carousel
+        const response = await movieApi.fetchMovies({ page: 0, size: 50 });
+        const allMovies = response.content || [];
         
         // Get 3 random movies
         const shuffled = [...allMovies].sort(() => 0.5 - Math.random());

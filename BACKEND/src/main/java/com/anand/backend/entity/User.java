@@ -9,12 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-/**
- * Represents a User authenticated via Google OAuth2.
- */
 @Document(collection = "users")
 @Data
 @NoArgsConstructor
@@ -30,15 +26,16 @@ public class User {
     @Builder.Default
     private UserRole role = UserRole.USER;
 
+    // --- LIGHTWEIGHT LISTS (Embedded) ---
+    // We store only Movie IDs here. The frontend fetches details later.
 
     @Builder.Default
-    private List<WatchLater> watchLater = new ArrayList<>();
+    private List<String> watchLaterMovieIds = new ArrayList<>();
 
     @Builder.Default
-    private List<WatchHistory> watchHistory = new ArrayList<>();
+    private List<String> favoriteMovieIds = new ArrayList<>();
 
-    @Builder.Default
-    private List<Favorite> favorites = new ArrayList<>();
+    // Note: WatchHistory is NOT here. It is in a separate collection.
 
     @CreatedDate
     private Instant createdAt;
@@ -46,4 +43,3 @@ public class User {
     @LastModifiedDate
     private Instant updatedAt;
 }
-

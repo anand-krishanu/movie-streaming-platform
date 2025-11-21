@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import MoviePlayerComponent from "../../components/MoviePlayerComponent";
+import movieApi from "../../api/movieApi";
 
 export default function MoviePlayer() {
   const { id } = useParams();
@@ -9,9 +10,12 @@ export default function MoviePlayer() {
 
   useEffect(() => {
     const fetchMovie = async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/movies/${id}`);
-      const data = await res.json();
-      setMovie(data);
+      try {
+        const data = await movieApi.getMovieById(id);
+        setMovie(data);
+      } catch (error) {
+        console.error("Error fetching movie:", error);
+      }
     };
     fetchMovie();
   }, [id]);
@@ -22,9 +26,9 @@ export default function MoviePlayer() {
     <div className="bg-black text-white min-h-screen">
       <Navbar />
       <MoviePlayerComponent
+        movieId={id}
         title={movie.title}
         description={movie.description}
-        videoUrl={movie.videoUrl}
         poster={movie.poster}
       />
     </div>
