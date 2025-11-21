@@ -43,3 +43,11 @@ logs/
 ### OS junk ###
 .DS_Store
 Thumbs.db
+
+# Firebase Admin SDK keys
+service-account.json
+src/main/resources/service-account.json
+
+# Any other secret JSON files
+*.key.json
+*.credentials.json
