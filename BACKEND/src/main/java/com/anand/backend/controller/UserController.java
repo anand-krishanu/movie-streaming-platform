@@ -29,11 +29,19 @@ public class UserController {
         if (principal == null) throw new RuntimeException("Not authenticated");
 
         FirebaseToken token = (FirebaseToken) principal;
+        
+        log.info("Looking up user by email: {}", token.getEmail());
 
         // Efficient: Fetch ID by email
         return userService.getUserByEmail(token.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not synced in DB"))
-                .getId();
+                .map(user -> {
+                    log.info("User found: id={}, email={}", user.getId(), user.getEmail());
+                    return user.getId();
+                })
+                .orElseThrow(() -> {
+                    log.error("User not found in DB for email: {}", token.getEmail());
+                    return new RuntimeException("User not synced in DB");
+                });
     }
 
     // ----------------------------------------------------

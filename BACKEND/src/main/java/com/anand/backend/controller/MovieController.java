@@ -43,6 +43,7 @@ public class MovieController {
             @RequestParam("description") String description,
             @RequestParam("imdbRating") Double imdbRating, // Changed to Double
             @RequestParam("genres") List<String> genres,   // Changed to List<String>
+            @RequestParam(value = "poster", required = false) String poster, // Movie poster URL
             @RequestParam("file") MultipartFile file
     ) {
         try {
@@ -53,6 +54,7 @@ public class MovieController {
                     description,
                     imdbRating,
                     genres,
+                    poster,
                     file
             );
             return ResponseEntity.ok(saved);
@@ -144,8 +146,8 @@ public class MovieController {
                 headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
             }
 
-            // Enable CORS for video player access (Important for HLS)
-            headers.add("Access-Control-Allow-Origin", "*");
+            // CORS is already configured globally in WebConfig, no need to add headers here
+            // Just add expose headers for HLS functionality
             headers.add("Access-Control-Expose-Headers", "Content-Length");
 
             return ResponseEntity.ok()

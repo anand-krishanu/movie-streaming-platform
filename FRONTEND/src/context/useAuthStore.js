@@ -18,9 +18,12 @@ const useAuthStore = create(
           try {
             // Sync user with Spring Boot backend
             const response = await userApi.syncUser();
-            set({ dbUser: response, userData: response });
+            // Response is {user: {...}, isNewUser: false, message: "..."}
+            // Store the actual user object
+            const actualUser = response.user || response;
+            set({ dbUser: actualUser, userData: actualUser });
             
-            console.log("✅ User synced with backend:", response);
+            console.log("✅ User synced with backend:", actualUser);
             
           } catch (error) {
             console.error("❌ Failed to sync user with backend:", error);
