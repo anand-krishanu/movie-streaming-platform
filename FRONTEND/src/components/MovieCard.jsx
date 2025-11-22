@@ -10,8 +10,28 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
   const [watchLaterLoading, setWatchLaterLoading] = useState(false);
   const { dbUser, userData, toggleFavorite, toggleWatchLater } = useAuthStore();
 
-  const isInFavorites = userData?.favoriteMovieIds?.includes(movie._id || movie.id);
-  const isInWatchLater = userData?.watchLaterMovieIds?.includes(movie._id || movie.id);
+  // Map backend field names to frontend
+  const movieId = movie.movieId || movie._id || movie.id;
+  const title = movie.movieTitle || movie.title;
+  
+  // Use moviePoster for movie tiles
+  const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+  let poster = movie.moviePoster;
+  
+  // If poster is relative path, make it absolute
+  if (poster && !poster.startsWith('http')) {
+    // Remove /api prefix if it exists since baseURL already includes it
+    const cleanPath = poster.startsWith('/api') ? poster.substring(4) : poster;
+    poster = baseURL + cleanPath;
+  } else if (!poster) {
+    poster = 'https://via.placeholder.com/300x450?text=No+Poster';
+  }
+  
+  const genres = movie.genres || movie.genre || [];
+  const rating = movie.imdbRating || movie.rating || 'N/A';
+
+  const isInFavorites = userData?.favoriteMovieIds?.includes(movieId);
+  const isInWatchLater = userData?.watchLaterMovieIds?.includes(movieId);
 
   const handleFavoriteClick = async (e) => {
     e.preventDefault();
@@ -22,11 +42,17 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
       return;
     }
     
+    // Extra check: ensure user is synced with backend
+    if (!userData || !userData.id) {
+      toast.warning("Please wait, syncing user data...");
+      console.log('⚠️ User not fully synced yet, userData:', userData);
+      return;
+    }
+    
     if (favoriteLoading) return;
     
     setFavoriteLoading(true);
     try {
-      const movieId = movie._id || movie.id;
       await toggleFavorite(movieId);
       
       toast.success(isInFavorites ? "Removed from favorites! 💔" : "Added to favorites! ❤️");
@@ -47,11 +73,18 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
       return;
     }
     
+    // Extra check: ensure user is synced with backend
+    // Backend User has email as the identifier
+    if (!userData || !userData.email) {
+      toast.warning("Please wait, syncing user data...");
+      console.log('⚠️ User not fully synced yet, userData:', userData);
+      return;
+    }
+    
     if (watchLaterLoading) return;
     
     setWatchLaterLoading(true);
     try {
-      const movieId = movie._id || movie.id;
       await toggleWatchLater(movieId);
       
       toast.success(isInWatchLater ? "Removed from watch later! 🗑️" : "Added to watch later! 🕒");
@@ -66,25 +99,28 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
   return (
     <div className="relative bg-zinc-900 rounded-xl overflow-hidden shadow-md hover:scale-105 transition-transform duration-200">
       {/* Wrap image with Link */}
-      <Link to={`/player/${movie._id || movie.id}`}>
+      <Link to={`/player/${movieId}`}>
         <img
-          src={movie.poster}
-          alt={movie.title}
+          src={poster}
+          alt={title}
           className="w-full h-64 object-cover cursor-pointer"
+          onError={(e) => {
+            e.target.src = 'https://via.placeholder.com/300x450?text=No+Poster';
+          }}
         />
       </Link>
 
       {/* Overlay (optional clickable area) */}
       <div className="absolute inset-0 bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-        <Link to={`/player/${movie._id || movie.id}`}>
+        <Link to={`/player/${movieId}`}>
           <h3 className="text-lg font-semibold truncate hover:underline">
-            {movie.title}
+            {title}
           </h3>
         </Link>
-        <p className="text-sm text-gray-300">{Array.isArray(movie.genre) ? movie.genre.join(", ") : movie.genre}</p>
+        <p className="text-sm text-gray-300">{Array.isArray(genres) ? genres.join(", ") : genres}</p>
 
         <div className="flex items-center justify-between mt-2">
-          <span className="text-yellow-400 font-medium">⭐ {movie.rating}</span>
+          <span className="text-yellow-400 font-medium">⭐ {rating}</span>
 
           {showButtons && (
             <div className="flex gap-3">

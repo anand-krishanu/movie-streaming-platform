@@ -16,21 +16,15 @@ const LoginPage = () => {
       setLoading(true);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      // map Firebase user to the store shape
-      const storeUser = {
-        uid: user.uid,
-        name: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-      };
-      // set user in app store so other components can react
-      setAuthUser(storeUser);
+      
+      // Pass the actual Firebase user object to the store
+      // The setUser method will handle syncing with backend
+      await setAuthUser(user);
 
-      // non-blocking navigation so popup can close cleanly
+      // Navigate to home after successful login
       navigate(targetRoute);
     } catch (error) {
       console.error("Google sign-in error:", error);
-      // temporary fallback; replace with a toast/toastify in future
       alert("Sign-in failed. Check console for details.");
     } finally {
       setLoading(false);

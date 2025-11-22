@@ -20,6 +20,7 @@ public class Movie {
 
     private String movieTitle;
     private String movieDescription;
+    private String moviePoster; // URL to the movie poster image
     private List<String> genres;
     private Double imdbRating;
     private Instant releaseDate;

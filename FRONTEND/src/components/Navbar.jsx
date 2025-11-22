@@ -75,6 +75,8 @@ export default function Navbar() {
         ))}
       </div>
 
+      <Link to="/admin/add-movie">Add New Movie</Link>
+
       <div className="flex items-center">
         {!user && (
           <Link

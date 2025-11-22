@@ -46,6 +46,7 @@ public class MovieService {
             String description,
             Double imdbRating,
             List<String> genres,
+            String poster,
             MultipartFile file
     ) throws IOException {
 
@@ -74,6 +75,7 @@ public class MovieService {
                 .movieId(UUID.randomUUID().toString())
                 .movieTitle(title)
                 .movieDescription(description)
+                .moviePoster(poster) // Add poster URL
                 .genres(genres)
                 .imdbRating(imdbRating) // Note: field name is camelCase in Entity
                 .videoDetails(videoDetails)

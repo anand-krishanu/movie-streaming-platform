@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
 import movieApi from '../api/movieApi';
+import useAuthStore from '../context/useAuthStore';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 // Import Swiper styles
@@ -13,13 +14,24 @@ import './MovieCarousel.css';
 const MovieCarousel = () => {
   const [featuredMovies, setFeaturedMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuthStore();
 
   useEffect(() => {
+    if (!user) {
+      console.log('🎠 Carousel: No user, skipping fetch');
+      setLoading(false);
+      return; // Don't fetch if not logged in
+    }
+
     const fetchRandomMovies = async () => {
+      // Small delay to ensure Firebase token is ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('🎠 Fetching carousel movies...');
       try {
         // Fetch movies with a reasonable page size to get variety for carousel
         const response = await movieApi.fetchMovies({ page: 0, size: 50 });
         const allMovies = response.content || [];
+        console.log('🎠 Carousel movies fetched:', allMovies.length);
         
         // Get 3 random movies
         const shuffled = [...allMovies].sort(() => 0.5 - Math.random());
@@ -27,14 +39,19 @@ const MovieCarousel = () => {
         
         setFeaturedMovies(randomMovies);
       } catch (error) {
-        console.error('Error fetching random movies:', error);
+        console.error('❌ Carousel error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response,
+          status: error.response?.status
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchRandomMovies();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (
@@ -78,46 +95,70 @@ const MovieCarousel = () => {
           msOverflowStyle: 'none'
         }}
       >
-        {featuredMovies.map((movie, index) => (
-          <SwiperSlide key={movie._id || index}>
+        {featuredMovies.map((movie, index) => {
+          const movieId = movie.movieId || movie._id || movie.id;
+          const title = movie.movieTitle || movie.title || 'Unknown Title';
+          
+          // Use thumbnailSpriteUrl for carousel display
+          const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+          let poster = movie.videoDetails?.thumbnailSpriteUrl;
+          
+          // If thumbnail is relative path, make it absolute
+          if (poster && !poster.startsWith('http')) {
+            // Remove /api prefix if it exists since baseURL already includes it
+            const cleanPath = poster.startsWith('/api') ? poster.substring(4) : poster;
+            poster = baseURL + cleanPath;
+          } else if (!poster) {
+            poster = 'https://via.placeholder.com/500x750?text=Movie+Poster';
+          }
+          
+          const genres = movie.genres || movie.genre || [];
+          const rating = movie.imdbRating || movie.rating || 'N/A';
+          const description = movie.movieDescription || movie.description || 'No description available';
+          const duration = movie.videoDetails?.durationSeconds ? Math.floor(movie.videoDetails.durationSeconds / 60) : (movie.duration || 'N/A');
+          const year = movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : (movie.year || 'N/A');
+          
+          return (
+          <SwiperSlide key={movieId}>
             <div className="carousel-item-wrapper">
               <div className="row align-items-center">
                 <div className="col-md-6">
                   <img
-                    src={movie.poster}
+                    src={poster}
                     className="d-block w-100 carousel-image"
-                    alt={movie.title}
+                    alt={title}
                     onError={(e) => {
                       e.target.src = 'https://via.placeholder.com/500x750?text=Movie+Poster';
                     }}
                   />
                 </div>
                 <div className="col-md-6 p-4 carousel-content">
-                  <h2 className="carousel-title">{movie.title}</h2>
+                  <h2 className="carousel-title">{title}</h2>
                   <p className="carousel-detail">
                     <strong>Genre:</strong> {
-                      Array.isArray(movie.genre) 
-                        ? movie.genre.join(', ') 
-                        : movie.genre || 'Unknown'
+                      Array.isArray(genres) 
+                        ? genres.join(', ') 
+                        : genres || 'Unknown'
                     }
                   </p>
                   <p className="carousel-detail">
-                    <strong>Rating:</strong> ⭐ {movie.rating}/10
+                    <strong>Rating:</strong> ⭐ {rating}/10
                   </p>
                   <p className="carousel-detail">
-                    <strong>Year:</strong> {movie.year}
+                    <strong>Year:</strong> {year}
                   </p>
                   <p className="carousel-detail">
-                    <strong>Duration:</strong> {movie.duration} min
+                    <strong>Duration:</strong> {duration} min
                   </p>
                   <p className="carousel-description">
-                    {movie.description}
+                    {description}
                   </p>
                 </div>
               </div>
             </div>
           </SwiperSlide>
-        ))}
+        )})}
+
 
         {/* Custom Navigation Buttons */}
         <button className="carousel-control-prev" type="button">

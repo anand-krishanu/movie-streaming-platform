@@ -5,24 +5,45 @@ import MovieCarousel from "../../components/MovieCarousel";
 import movieApi from "../../api/movieApi";
 import useAuthStore from "../../context/useAuthStore";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const [moviesByGenre, setMoviesByGenre] = useState({});
-  const { dbUser } = useAuthStore();
+  const [loading, setLoading] = useState(true);
+  const { user, dbUser } = useAuthStore();
+  const navigate = useNavigate();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      toast.info("Please login to browse movies");
+      navigate("/login");
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
+    if (!user) {
+      console.log('⏳ Waiting for user authentication...');
+      return; // Don't fetch if not logged in
+    }
+
     const fetchMovies = async () => {
+      // Small delay to ensure Firebase token is ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('🎬 Fetching movies for user:', user.email);
       try {
         // Fetch all movies with a large page size to get most movies
-        const response = await movieApi.fetchMovies(0, 100);
+        const response = await movieApi.fetchMovies({ page: 0, size: 100 });
+        console.log('✅ Movies fetched successfully:', response);
+        console.log('📝 Sample movie data:', response.content[0]);
         const movies = response.content;
 
         // Group movies by genre on the client side
         // Each movie can appear in multiple genre rows
         const grouped = {};
         movies.forEach(movie => {
-          if (movie.genre && Array.isArray(movie.genre)) {
-            movie.genre.forEach(genre => {
+          if (movie.genres && Array.isArray(movie.genres)) {
+            movie.genres.forEach(genre => {
               if (!grouped[genre]) {
                 grouped[genre] = [];
               }
@@ -31,15 +52,31 @@ export default function Home() {
           }
         });
         
+        console.log('📊 Movies grouped by genre:', Object.keys(grouped));
         setMoviesByGenre(grouped);
       } catch (err) {
-        console.error("Error fetching movies:", err);
-        toast.error("Failed to load movies");
+        console.error("❌ Error fetching movies:", err);
+        console.error("Error details:", {
+          message: err.message,
+          response: err.response,
+          status: err.response?.status
+        });
+        toast.error("Failed to load movies. Please try logging in again.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchMovies();
-  }, []);
+  }, [user]);
+
+  if (!user || loading) {
+    return (
+      <div className="bg-black min-h-screen text-white flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-black min-h-screen text-white">

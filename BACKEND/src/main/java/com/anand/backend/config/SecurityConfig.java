@@ -21,6 +21,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configure(http))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/public/**").permitAll() // Open endpoints
+                        .requestMatchers("/api/movies/stream/**").permitAll() // Allow streaming without auth
                         .anyRequest().authenticated() // Everything else requires Token
                 )
                 .addFilterBefore(firebaseTokenFilter, UsernamePasswordAuthenticationFilter.class);
