@@ -52,9 +52,18 @@ public class UserController {
             @PathVariable String movieId,
             @AuthenticationPrincipal Object principal
     ) {
-        String userId = getUserId(principal);
-        userService.toggleFavorite(userId, movieId);
-        return ResponseEntity.ok("Favorite toggled");
+        try {
+            log.info("🎯 toggleFavorite endpoint called for movieId: {}", movieId);
+            String userId = getUserId(principal);
+            log.info("👤 User ID resolved: {}", userId);
+            log.info("🔧 About to call userService.toggleFavorite...");
+            userService.toggleFavorite(userId, movieId);
+            log.info("✅ userService.toggleFavorite returned");
+            return ResponseEntity.ok("Favorite toggled");
+        } catch (Exception e) {
+            log.error("❌ Error in toggleFavorite: ", e);
+            throw e;
+        }
     }
 
     // ----------------------------------------------------

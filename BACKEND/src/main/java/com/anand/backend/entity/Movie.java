@@ -27,8 +27,10 @@ public class Movie {
 
     private VideoDetails videoDetails;
 
-    private Statistics statistics;
+    @Builder.Default
+    private Statistics statistics = new Statistics();
 
+    @Builder.Default
     private Instant createdAt = Instant.now();
 
     @Data
@@ -51,7 +53,21 @@ public class Movie {
     @AllArgsConstructor
     @Builder
     public static class Statistics {
+        @Builder.Default
         private long views = 0;
+        
+        @Builder.Default
         private long likes = 0;
+        
+        @Builder.Default
+        private List<String> likedByUserIds = new java.util.ArrayList<>();
+        
+        // Custom getter to ensure it exists
+        public List<String> getLikedByUserIds() {
+            if (likedByUserIds == null) {
+                likedByUserIds = new java.util.ArrayList<>();
+            }
+            return likedByUserIds;
+        }
     }
 }

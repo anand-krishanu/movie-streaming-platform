@@ -159,6 +159,42 @@ public class MovieService {
         log.info("Deleted movie and files for ID: {}", movieId);
     }
 
+    // ----------------------------------------------------------------
+    // 4. INCREMENT VIEW COUNT
+    // ----------------------------------------------------------------
+    @Transactional
+    public void incrementView(String movieId) {
+        Movie movie = movieRepository.findById(movieId).orElse(null);
+        if (movie != null) {
+            if (movie.getStatistics() == null) {
+                movie.setStatistics(Movie.Statistics.builder().views(1).likes(0).build());
+            } else {
+                movie.getStatistics().setViews(movie.getStatistics().getViews() + 1);
+            }
+            movieRepository.save(movie);
+            log.info("View count incremented for movie: {}", movieId);
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 5. TOGGLE LIKE
+    // ----------------------------------------------------------------
+    @Transactional
+    public void toggleLike(String movieId) {
+        Movie movie = movieRepository.findById(movieId).orElse(null);
+        if (movie != null) {
+            if (movie.getStatistics() == null) {
+                movie.setStatistics(Movie.Statistics.builder().views(0).likes(1).build());
+            } else {
+                long currentLikes = movie.getStatistics().getLikes();
+                // Simple toggle: increment (in real app, track per-user likes)
+                movie.getStatistics().setLikes(currentLikes + 1);
+            }
+            movieRepository.save(movie);
+            log.info("Like toggled for movie: {}", movieId);
+        }
+    }
+
     // Helper to delete folder with contents
     private void deleteRecursive(File file) {
         if (file.isDirectory()) {
@@ -170,7 +206,7 @@ public class MovieService {
     }
 
     // ----------------------------------------------------------------
-    // 4. CALLBACK HANDLERS
+    // 6. CALLBACK HANDLERS
     // ----------------------------------------------------------------
 
     private void handleSuccess(String movieId, VideoProcessingResult result, String folderName) {

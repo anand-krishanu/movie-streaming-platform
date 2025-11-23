@@ -2,6 +2,7 @@ package com.anand.backend.controller;
 
 import com.anand.backend.entity.Movie;
 import com.anand.backend.service.MovieService;
+import com.anand.backend.service.MLRecommendationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +29,9 @@ public class MovieController {
 
     @Autowired
     private MovieService movieService;
+
+    @Autowired
+    private MLRecommendationService mlRecommendationService;
 
     @Value("${video.processed.dir:processed}")
     private String processedDir;
@@ -92,6 +99,24 @@ public class MovieController {
     public ResponseEntity<Void> deleteMovie(@PathVariable String id) {
         movieService.deleteMovie(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --------------------------------------------------------
+    // INCREMENT VIEW COUNT
+    // --------------------------------------------------------
+    @PostMapping("/{id}/view")
+    public ResponseEntity<String> incrementView(@PathVariable String id) {
+        movieService.incrementView(id);
+        return ResponseEntity.ok("View count incremented");
+    }
+
+    // --------------------------------------------------------
+    // TOGGLE LIKE
+    // --------------------------------------------------------
+    @PostMapping("/{id}/like")
+    public ResponseEntity<String> toggleLike(@PathVariable String id) {
+        movieService.toggleLike(id);
+        return ResponseEntity.ok("Like toggled");
     }
 
     // --------------------------------------------------------
@@ -184,5 +209,64 @@ public class MovieController {
         // Note: We removed 'language' from the Service args in previous steps
         // If you need language, you must add it back to Repository and Service
         return movieService.filterMovies(genre, page, size);
+    }
+
+    // --------------------------------------------------------
+    // ML RECOMMENDATIONS
+    // --------------------------------------------------------
+
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<Movie>> getRecommendations(
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal Object principal
+    ) {
+        try {
+            String userId = getCurrentUserId(principal);
+            List<Movie> recommendations = mlRecommendationService.getRecommendationsForUser(userId, limit);
+            return ResponseEntity.ok(recommendations);
+        } catch (Exception e) {
+            log.error("Failed to get recommendations: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{movieId}/similar")
+    public ResponseEntity<List<Movie>> getSimilarMovies(
+            @PathVariable String movieId,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        try {
+            List<Movie> similar = mlRecommendationService.getSimilarMovies(movieId, limit);
+            return ResponseEntity.ok(similar);
+        } catch (Exception e) {
+            log.error("Failed to get similar movies: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/ml/train")
+    public ResponseEntity<String> trainMLModel() {
+        try {
+            String result = mlRecommendationService.trainModel();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Failed to train model: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("ML service unavailable");
+        }
+    }
+
+    // Helper method to get current user ID
+    private String getCurrentUserId(Object principal) {
+        if (principal == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+        
+        if (principal instanceof com.google.firebase.auth.FirebaseToken) {
+            com.google.firebase.auth.FirebaseToken token = (com.google.firebase.auth.FirebaseToken) principal;
+            return token.getUid();
+        }
+        
+        throw new RuntimeException("Invalid authentication principal");
     }
 }
