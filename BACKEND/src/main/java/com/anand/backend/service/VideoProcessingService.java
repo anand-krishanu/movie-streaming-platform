@@ -102,7 +102,7 @@ public class VideoProcessingService {
 
         ProcessBuilder pb = new ProcessBuilder(
                 "ffmpeg", "-y",
-                "-ss", "00:01:00", // Seek to 5th second
+                "-ss", "00:01:00",
                 "-i", input.getAbsolutePath(),
                 "-vframes", "1", // Take 1 frame
                 "-q:v", "2", // High quality jpg
