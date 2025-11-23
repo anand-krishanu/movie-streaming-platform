@@ -14,18 +14,16 @@ import './MovieCarousel.css';
 const MovieCarousel = () => {
   const [featuredMovies, setFeaturedMovies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuthStore();
+  const { user, authInitialized } = useAuthStore();
 
   useEffect(() => {
-    if (!user) {
-      console.log('🎠 Carousel: No user, skipping fetch');
+    if (!user || !authInitialized) {
+      console.log('🎠 Carousel: Waiting for auth...');
       setLoading(false);
-      return; // Don't fetch if not logged in
+      return; // Don't fetch if not logged in or auth not initialized
     }
 
     const fetchRandomMovies = async () => {
-      // Small delay to ensure Firebase token is ready
-      await new Promise(resolve => setTimeout(resolve, 500));
       console.log('🎠 Fetching carousel movies...');
       try {
         // Fetch movies with a reasonable page size to get variety for carousel
@@ -51,7 +49,7 @@ const MovieCarousel = () => {
     };
 
     fetchRandomMovies();
-  }, [user]);
+  }, [user, authInitialized]);
 
   if (loading) {
     return (

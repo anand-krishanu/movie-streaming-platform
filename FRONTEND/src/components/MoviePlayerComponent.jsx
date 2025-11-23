@@ -1,13 +1,12 @@
 // src/components/MoviePlayerComponent.jsx
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import Hls from "hls.js";
 import movieApi from "../api/movieApi";
 import userApi from "../api/userApi";
 import useAuthStore from "../context/useAuthStore";
 
-const MoviePlayerComponent = ({ movieId, title, description, poster }) => {
+const MoviePlayerComponent = ({ movieId, poster }) => {
   const videoRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const progressIntervalRef = useRef(null);
   const { dbUser } = useAuthStore();
 
@@ -62,12 +61,10 @@ const MoviePlayerComponent = ({ movieId, title, description, poster }) => {
 
     // Update progress every 10 seconds while playing
     const handlePlay = () => {
-      setIsPlaying(true);
       progressIntervalRef.current = setInterval(updateProgress, 10000);
     };
 
     const handlePause = () => {
-      setIsPlaying(false);
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current);
       }
@@ -89,16 +86,6 @@ const MoviePlayerComponent = ({ movieId, title, description, poster }) => {
     };
   }, [movieId, dbUser]);
 
-  const togglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (isPlaying) {
-      video.pause();
-    } else {
-      video.play();
-    }
-  };
-
   return (
     <div className="flex flex-col items-center w-full max-w-5xl mx-auto py-10 px-4">
       <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-lg">
@@ -109,18 +96,6 @@ const MoviePlayerComponent = ({ movieId, title, description, poster }) => {
           className="w-full h-full"
         />
       </div>
-
-      <div className="mt-5 w-full">
-        <h2 className="text-2xl font-bold mb-2">{title}</h2>
-        <p className="text-gray-400 text-sm">{description}</p>
-      </div>
-
-      <button
-        onClick={togglePlay}
-        className="mt-5 bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg transition"
-      >
-        {isPlaying ? "Pause" : "Play"}
-      </button>
     </div>
   );
 };

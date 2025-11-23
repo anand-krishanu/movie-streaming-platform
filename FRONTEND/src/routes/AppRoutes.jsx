@@ -7,6 +7,7 @@ import Login from "../pages/auth/LoginPage.jsx";
 import Logout from "../pages/auth/LogOutPage.jsx";
 import ProfilePage from "../pages/Profile/ProfilePage.jsx";
 import AddMovie from "../pages/Admin/AddMovie.jsx";
+import AdminDashboard from "../pages/Admin/AdmnDashboard.jsx";
 // import MovieDetails from "../pages/Movie/MovieDetails.jsx";
 // import WatchPage from "../pages/Watch/WatchPage.jsx";
 // import SearchResults from "../pages/Search/SearchResults.jsx";
@@ -23,6 +24,7 @@ const appRoutes = createBrowserRouter([
   { path: "/login", element: <Login /> },
   { path: "/logout", element: <Logout /> },
   { path: "/profile", element: <ProfilePage /> },
+  { path: "/admin", element: <AdminDashboard /> },
   { path: "/admin/add-movie", element: <AddMovie /> },
   { path: "/player/:id", element: <MoviePlayer /> },
   // { path: "/watch/:id", element: <WatchPage /> },

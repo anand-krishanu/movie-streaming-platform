@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import GenreRow from "../../components/GenreRow";
 import MovieCarousel from "../../components/MovieCarousel";
+import RecommendedRow from "../../components/RecommendedRow";
 import movieApi from "../../api/movieApi";
 import useAuthStore from "../../context/useAuthStore";
 import { toast } from "react-toastify";
@@ -10,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 export default function Home() {
   const [moviesByGenre, setMoviesByGenre] = useState({});
   const [loading, setLoading] = useState(true);
-  const { user, dbUser } = useAuthStore();
+  const { user, dbUser, authInitialized } = useAuthStore();
   const navigate = useNavigate();
 
   // Redirect to login if not authenticated
@@ -22,14 +23,12 @@ export default function Home() {
   }, [user, navigate]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !authInitialized) {
       console.log('⏳ Waiting for user authentication...');
-      return; // Don't fetch if not logged in
+      return; // Don't fetch if not logged in or auth not initialized
     }
 
     const fetchMovies = async () => {
-      // Small delay to ensure Firebase token is ready
-      await new Promise(resolve => setTimeout(resolve, 500));
       console.log('🎬 Fetching movies for user:', user.email);
       try {
         // Fetch all movies with a large page size to get most movies
@@ -68,7 +67,7 @@ export default function Home() {
     };
 
     fetchMovies();
-  }, [user]);
+  }, [user, authInitialized]);
 
   if (!user || loading) {
     return (
@@ -84,6 +83,9 @@ export default function Home() {
       <div className="pt-20">
         {/* Featured Movies Carousel */}
         <MovieCarousel />
+        
+        {/* Personalized Recommendations - Show first if user is logged in */}
+        {user && <RecommendedRow />}
         
         {/* Genre Rows */}
         <div className="space-y-10">

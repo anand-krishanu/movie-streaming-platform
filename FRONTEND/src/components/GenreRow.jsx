@@ -36,7 +36,7 @@ export default function GenreRow({ genre, movies }) {
       >
         {Array.isArray(movies) &&
           movies.map((movie) => (
-            <div key={movie._id || movie.id} className="min-w-[180px]">
+            <div key={movie.movieId || movie._id || movie.id} className="min-w-[180px]">
               <MovieCard 
                 movie={movie} 
               />

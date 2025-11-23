@@ -8,6 +8,7 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const dbUser = useAuthStore((s) => s.dbUser);
   const clearUser = useAuthStore((s) => s.clearUser);
 
   const navItems = [
@@ -75,7 +76,28 @@ export default function Navbar() {
         ))}
       </div>
 
-      <Link to="/admin/add-movie">Add New Movie</Link>
+      <div className="flex gap-4 items-center">
+        {dbUser?.role === "ADMIN" && (
+          <>
+            <Link 
+              to="/admin"
+              className={`hover:text-red-500 ${
+                pathname === "/admin" ? "text-red-500 font-semibold" : ""
+              }`}
+            >
+              Admin
+            </Link>
+            <Link 
+              to="/admin/add-movie"
+              className={`hover:text-red-500 ${
+                pathname === "/admin/add-movie" ? "text-red-500 font-semibold" : ""
+              }`}
+            >
+              Add Movie
+            </Link>
+          </>
+        )}
+      </div>
 
       <div className="flex items-center">
         {!user && (

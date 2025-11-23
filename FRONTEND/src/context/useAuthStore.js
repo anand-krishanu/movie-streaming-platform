@@ -9,6 +9,7 @@ const useAuthStore = create(
       user: null,           // Firebase user
       dbUser: null,         // MongoDB user from Spring Boot
       userData: null,       // Full user data with favorites/watchLater
+      authInitialized: false, // Track if Firebase auth check is complete
 
       // Login action - called after Firebase authentication
       setUser: async (firebaseUser) => {
@@ -21,7 +22,7 @@ const useAuthStore = create(
             // Response is {user: {...}, isNewUser: false, message: "..."}
             // Store the actual user object
             const actualUser = response.user || response;
-            set({ dbUser: actualUser, userData: actualUser });
+            set({ dbUser: actualUser, userData: actualUser, authInitialized: true });
             
             console.log("✅ User synced with backend:", actualUser);
             
@@ -38,8 +39,11 @@ const useAuthStore = create(
               watchLaterMovieIds: [],
               _isFallback: true
             };
-            set({ dbUser: fallbackDbUser, userData: fallbackDbUser });
+            set({ dbUser: fallbackDbUser, userData: fallbackDbUser, authInitialized: true });
           }
+        } else {
+          // No user, set initialized anyway
+          set({ authInitialized: true });
         }
       },
 
@@ -58,11 +62,15 @@ const useAuthStore = create(
       // Toggle favorite (handles add/remove automatically)
       toggleFavorite: async (movieId) => {
         try {
-          await userApi.toggleFavorite(movieId);
+          console.log('🔄 Calling toggleFavorite API for movieId:', movieId);
+          const response = await userApi.toggleFavorite(movieId);
+          console.log('✅ toggleFavorite API response:', response);
           // Refresh user data to get updated favorites
           await get().refreshUserData();
+          console.log('✅ User data refreshed');
         } catch (error) {
-          console.error("Failed to toggle favorite:", error);
+          console.error("❌ Failed to toggle favorite:", error);
+          throw error; // Re-throw to let caller handle it
         }
       },
 
@@ -77,7 +85,7 @@ const useAuthStore = create(
         }
       },
 
-      clearUser: () => set({ user: null, dbUser: null, userData: null }),
+      clearUser: () => set({ user: null, dbUser: null, userData: null, authInitialized: true }),
     }),
     {
       name: "auth-storage", // Persist to localStorage

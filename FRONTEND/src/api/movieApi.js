@@ -53,6 +53,38 @@ const movieApi = {
     return `${baseURL}/movies/stream/${movieId}/master.m3u8`;
   },
 
+  // Increment view count
+  incrementView: async (movieId) => {
+    const res = await axiosInstance.post(`/movies/${movieId}/view`);
+    return res.data;
+  },
+
+  // Toggle like
+  toggleLike: async (movieId) => {
+    const res = await axiosInstance.post(`/movies/${movieId}/like`);
+    return res.data;
+  },
+
+  // ML Recommendations
+  getRecommendations: async (limit = 10) => {
+    const res = await axiosInstance.get(`/movies/recommendations`, {
+      params: { limit }
+    });
+    return res.data;
+  },
+
+  getSimilarMovies: async (movieId, limit = 10) => {
+    const res = await axiosInstance.get(`/movies/${movieId}/similar`, {
+      params: { limit }
+    });
+    return res.data;
+  },
+
+  trainMLModel: async () => {
+    const res = await axiosInstance.post(`/movies/ml/train`);
+    return res.data;
+  },
+
   // Test endpoint
   hello: async () => {
     const res = await axiosInstance.get(`/movies/hello`);

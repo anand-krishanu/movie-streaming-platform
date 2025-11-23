@@ -1,14 +1,12 @@
-import { FaHeart, FaClock } from "react-icons/fa";
+import { FaClock } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import useAuthStore from "../context/useAuthStore";
-import userApi from "../api/userApi";
 import { toast } from "react-toastify";
 
-const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
-  const [favoriteLoading, setFavoriteLoading] = useState(false);
+const MovieCard = ({ movie, showButtons = true }) => {
   const [watchLaterLoading, setWatchLaterLoading] = useState(false);
-  const { dbUser, userData, toggleFavorite, toggleWatchLater } = useAuthStore();
+  const { dbUser, userData, toggleWatchLater } = useAuthStore();
 
   // Map backend field names to frontend
   const movieId = movie.movieId || movie._id || movie.id;
@@ -30,39 +28,7 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
   const genres = movie.genres || movie.genre || [];
   const rating = movie.imdbRating || movie.rating || 'N/A';
 
-  const isInFavorites = userData?.favoriteMovieIds?.includes(movieId);
   const isInWatchLater = userData?.watchLaterMovieIds?.includes(movieId);
-
-  const handleFavoriteClick = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!dbUser || dbUser._isFallback) {
-      toast.warning("Please login to add favorites.");
-      return;
-    }
-    
-    // Extra check: ensure user is synced with backend
-    if (!userData || !userData.id) {
-      toast.warning("Please wait, syncing user data...");
-      console.log('⚠️ User not fully synced yet, userData:', userData);
-      return;
-    }
-    
-    if (favoriteLoading) return;
-    
-    setFavoriteLoading(true);
-    try {
-      await toggleFavorite(movieId);
-      
-      toast.success(isInFavorites ? "Removed from favorites! 💔" : "Added to favorites! ❤️");
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
-      toast.error("Failed to update favorites");
-    } finally {
-      setFavoriteLoading(false);
-    }
-  };
 
   const handleWatchLaterClick = async (e) => {
     e.preventDefault();
@@ -135,18 +101,6 @@ const MovieCard = ({ movie, onFavorite, onWatchLater, showButtons = true }) => {
                 title={isInWatchLater ? "Remove from Watch Later" : "Add to Watch Later"}
               >
                 <FaClock />
-              </button>
-              <button
-                onClick={handleFavoriteClick}
-                disabled={favoriteLoading || !dbUser || dbUser._isFallback}
-                className={`transition-colors ${
-                  favoriteLoading ? "opacity-50 cursor-not-allowed" : ""
-                } ${
-                  isInFavorites ? "text-red-400" : "text-white hover:text-red-500"
-                }`}
-                title={isInFavorites ? "Remove from Favorites" : "Add to Favorites"}
-              >
-                <FaHeart />
               </button>
             </div>
           )}

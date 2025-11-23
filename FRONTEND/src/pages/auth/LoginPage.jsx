@@ -9,7 +9,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const setAuthUser = useAuthStore((state) => state.setUser);
-  const targetRoute = "/home"; // home route per AppRoutes.jsx
 
   const handleGoogleLogin = async () => {
     try {
@@ -21,8 +20,15 @@ const LoginPage = () => {
       // The setUser method will handle syncing with backend
       await setAuthUser(user);
 
-      // Navigate to home after successful login
-      navigate(targetRoute);
+      // Check if there's a saved redirect path (e.g., watch party link)
+      const redirectPath = localStorage.getItem('redirectAfterLogin');
+      if (redirectPath) {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectPath);
+      } else {
+        // Navigate to home after successful login
+        navigate("/home");
+      }
     } catch (error) {
       console.error("Google sign-in error:", error);
       alert("Sign-in failed. Check console for details.");

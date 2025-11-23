@@ -141,9 +141,9 @@ const AddMovie = () => {
       // Clear file input
       document.getElementById('videoFile').value = '';
 
-      // Navigate to admin dashboard after 2 seconds
+      // Navigate to home page after 2 seconds
       setTimeout(() => {
-        navigate('/admin');
+        navigate('/');
       }, 2000);
 
     } catch (error) {
