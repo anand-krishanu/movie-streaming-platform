@@ -1,1 +1,39 @@
+# Node
 node_modules
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Firebase & Secrets
+serviceAccountKey.json
+*firebase*.json
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build outputs
+target/
+build/
+dist/
+
+# Videos
+videos/
+videos_processed/
+
+# ML Models
+saved_models/*.pkl
+
+# OS
+.DS_Store
+Thumbs.db
