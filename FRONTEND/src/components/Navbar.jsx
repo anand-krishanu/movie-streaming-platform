@@ -59,7 +59,7 @@ export default function Navbar() {
   return (
     <nav className="flex items-center justify-between p-4 bg-zinc-900 text-white shadow-md">
       <Link to="/" className="text-2xl font-bold">
-        🎬 Movie Stream
+        Movie Stream
       </Link>
 
       <div className="flex gap-6">

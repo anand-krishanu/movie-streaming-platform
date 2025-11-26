@@ -107,7 +107,7 @@ export default function Watchlist() {
 
         {watchLaterMovies.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">🕒</div>
+            <div className="text-6xl mb-4"></div>
             <h2 className="text-2xl font-semibold mb-2">No movies to watch later</h2>
             <p className="text-gray-400 mb-6">Add movies you want to watch later!</p>
             <button

@@ -43,7 +43,7 @@ const MovieCard = ({ movie, showButtons = true }) => {
     // Backend User has email as the identifier
     if (!userData || !userData.email) {
       toast.warning("Please wait, syncing user data...");
-      console.log('⚠️ User not fully synced yet, userData:', userData);
+      console.log('[WARNING] User not fully synced yet, userData:', userData);
       return;
     }
     
@@ -53,7 +53,7 @@ const MovieCard = ({ movie, showButtons = true }) => {
     try {
       await toggleWatchLater(movieId);
       
-      toast.success(isInWatchLater ? "Removed from watch later! 🗑️" : "Added to watch later! 🕒");
+      toast.success(isInWatchLater ? "Removed from watch later!" : "Added to watch later!");
     } catch (error) {
       console.error("Error toggling watch later:", error);
       toast.error("Failed to update watch later");
@@ -86,7 +86,7 @@ const MovieCard = ({ movie, showButtons = true }) => {
         <p className="text-sm text-gray-300">{Array.isArray(genres) ? genres.join(", ") : genres}</p>
 
         <div className="flex items-center justify-between mt-2">
-          <span className="text-yellow-400 font-medium">⭐ {rating}</span>
+          <span className="text-yellow-400 font-medium">{rating}</span>
 
           {showButtons && (
             <div className="flex gap-3">

@@ -91,7 +91,7 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
     const video = videoRef.current;
     if (!video) return;
 
-    console.log('📨 Received sync message:', message);
+    console.log('[SYNC] Received sync message:', message);
 
     // Ignore messages from self
     if (message.userId === dbUser?.id) return;
@@ -106,7 +106,7 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
         // Sync if difference > 1 second or if we're about to play
         if (timeDiff > 1 || message.isPlaying) {
           video.currentTime = message.currentTime;
-          console.log(`⏩ Synced time to ${message.currentTime}s (diff: ${timeDiff.toFixed(2)}s)`);
+          console.log(`[SYNC] Synced time to ${message.currentTime}s (diff: ${timeDiff.toFixed(2)}s)`);
         }
       }
 
@@ -114,11 +114,11 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
       if (message.isPlaying !== undefined && message.isPlaying !== null) {
         if (message.isPlaying && video.paused) {
           video.play()
-            .then(() => console.log('▶️ Playing'))
+            .then(() => console.log('[SYNC] Playing'))
             .catch(err => console.error('Play error:', err));
         } else if (!message.isPlaying && !video.paused) {
           video.pause();
-          console.log('⏸️ Paused');
+          console.log('[SYNC] Paused');
         }
       }
     } finally {
@@ -134,7 +134,7 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
     // Connect to WebSocket
     websocketService.connect(
       () => {
-        console.log('✅ WebSocket connected for watch party');
+        console.log('[WS] WebSocket connected for watch party');
         setIsConnected(true);
         
         // Subscribe to room sync events
@@ -151,7 +151,7 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
         });
       },
       (error) => {
-        console.error('❌ WebSocket connection error:', error);
+        console.error('[ERROR] WebSocket connection error:', error);
         toast.error('Connection lost. Trying to reconnect...');
         setIsConnected(false);
       }
@@ -184,7 +184,7 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
       };
 
       websocketService.send(`/app/watch-party/${roomId}/sync`, syncData);
-      console.log('📤 Sent sync:', action, syncData);
+      console.log('[SYNC] Sent sync:', action, syncData);
     };
 
     const handlePlay = () => sendSync('play');
@@ -210,11 +210,11 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
             <span className="text-sm text-gray-300">
-              {isConnected ? '🎉 Connected to watch party' : '⏳ Connecting...'}
+              {isConnected ? 'Connected to watch party' : 'Connecting...'}
             </span>
           </div>
           <div className="text-xs text-gray-400">
-            {isHost ? '👑 Host (You control playback)' : '👥 Participant'}
+            {isHost ? 'Host (You control playback)' : 'Participant'}
           </div>
         </div>
       )}
@@ -232,7 +232,7 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
       {/* Host Controls Info */}
       {roomId && !isHost && (
         <div className="mt-4 text-sm text-gray-400 text-center">
-          ℹ️ Only the host can control playback. Your player will sync automatically.
+          Only the host can control playback. Your player will sync automatically.
         </div>
       )}
     </div>

@@ -14,7 +14,7 @@ export default function ParticipantsList({ roomId, hostUserId }) {
     websocketService.subscribe(
       `/topic/watch-party/${roomId}/participants`,
       (update) => {
-        console.log('👥 Participant update:', update);
+        console.log('[PARTICIPANTS] Participant update:', update);
         
         if (update.participants) {
           setParticipants(update.participants);
@@ -22,9 +22,9 @@ export default function ParticipantsList({ roomId, hostUserId }) {
         
         // Handle join/leave notifications
         if (update.type === 'join') {
-          console.log(`✅ ${update.userId} joined`);
+          console.log(`[JOIN] ${update.userId} joined`);
         } else if (update.type === 'leave') {
-          console.log(`👋 ${update.userId} left`);
+          console.log(`[LEAVE] ${update.userId} left`);
         }
       },
       `participants-${roomId}`

@@ -24,17 +24,17 @@ export default function Home() {
 
   useEffect(() => {
     if (!user || !authInitialized) {
-      console.log('⏳ Waiting for user authentication...');
+      console.log('[AUTH] Waiting for user authentication...');
       return; // Don't fetch if not logged in or auth not initialized
     }
 
     const fetchMovies = async () => {
-      console.log('🎬 Fetching movies for user:', user.email);
+      console.log('[FETCH] Fetching movies for user:', user.email);
       try {
         // Fetch all movies with a large page size to get most movies
         const response = await movieApi.fetchMovies({ page: 0, size: 100 });
-        console.log('✅ Movies fetched successfully:', response);
-        console.log('📝 Sample movie data:', response.content[0]);
+        console.log('[SUCCESS] Movies fetched successfully:', response);
+        console.log('[DEBUG] Sample movie data:', response.content[0]);
         const movies = response.content;
 
         // Group movies by genre on the client side
@@ -51,10 +51,10 @@ export default function Home() {
           }
         });
         
-        console.log('📊 Movies grouped by genre:', Object.keys(grouped));
+        console.log('[INFO] Movies grouped by genre:', Object.keys(grouped));
         setMoviesByGenre(grouped);
       } catch (err) {
-        console.error("❌ Error fetching movies:", err);
+        console.error('[ERROR] Error fetching movies:', err);
         console.error("Error details:", {
           message: err.message,
           response: err.response,

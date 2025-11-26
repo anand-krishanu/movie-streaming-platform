@@ -40,18 +40,18 @@ export default function AdminDashboard() {
 
   const handleTrainModel = async () => {
     try {
-      setTraining(true);
-      toast.info("🤖 Starting model training... This may take a minute.");
+setTraining(true);
+      toast.info('Starting model training... This may take a minute.');
       
       const result = await movieApi.trainMLModel();
       
-      toast.success("✅ Model trained successfully!");
+      toast.success('Model trained successfully!');
       
       // Refresh ML status
       await fetchMLStatus();
     } catch (error) {
       console.error("Training failed:", error);
-      toast.error("❌ Training failed. Check if ML service is running.");
+      toast.error('Training failed. Check if ML service is running.');
     } finally {
       setTraining(false);
     }
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
                     ? "text-green-400" 
                     : "text-red-400"
                 }`}>
-                  {mlStatus?.status === "running" ? "🟢 Running" : "🔴 Offline"}
+                  {mlStatus?.status === "running" ? "Running" : "Offline"}
                 </span>
               </div>
               
@@ -99,7 +99,7 @@ export default function AdminDashboard() {
                     ? "text-green-400" 
                     : "text-yellow-400"
                 }`}>
-                  {mlStatus?.model_trained ? "✅ Trained" : "⚠️ Not Trained"}
+                  {mlStatus?.model_trained ? "Trained" : "Not Trained"}
                 </span>
               </div>
               
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
           
           <div className="space-y-4 text-gray-300">
             <div className="p-4 bg-zinc-800 rounded-lg">
-              <h3 className="font-semibold text-white mb-2">📊 How It Works</h3>
+              <h3 className="font-semibold text-white mb-2">How It Works</h3>
               <p className="text-sm">
                 The ML service uses collaborative filtering (NMF) and content-based filtering 
                 to generate personalized movie recommendations for users.
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
             </div>
             
             <div className="p-4 bg-zinc-800 rounded-lg">
-              <h3 className="font-semibold text-white mb-2">🎯 When to Train</h3>
+              <h3 className="font-semibold text-white mb-2">When to Train</h3>
               <ul className="text-sm space-y-1 list-disc list-inside">
                 <li>After adding new movies to the platform</li>
                 <li>When users have added new favorites or watch history</li>
@@ -184,11 +184,11 @@ export default function AdminDashboard() {
             </div>
             
             <div className="p-4 bg-zinc-800 rounded-lg">
-              <h3 className="font-semibold text-white mb-2">⚙️ Current Behavior</h3>
+              <h3 className="font-semibold text-white mb-2">Current Behavior</h3>
               <p className="text-sm">
                 {mlStatus?.model_trained 
-                  ? "✅ Using ML-powered personalized recommendations"
-                  : "⚠️ Using popular movies as fallback (train model for personalization)"
+                  ? "Using ML-powered personalized recommendations"
+                  : "Using popular movies as fallback (train model for personalization)"
                 }
               </p>
             </div>

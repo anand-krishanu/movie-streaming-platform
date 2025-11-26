@@ -35,7 +35,7 @@ export default function MoviePlayer() {
       getWatchParty(roomId)
         .then(data => {
           setRoomData(data);
-          toast.success('Joined watch party! 🎉');
+          toast.success('Joined watch party!');
         })
         .catch(error => {
           console.error('Error fetching room:', error);
@@ -49,19 +49,19 @@ export default function MoviePlayer() {
   useEffect(() => {
     // STEP 1: Wait for auth to fully initialize
     if (!authInitialized) {
-      console.log('⏳ Waiting for auth to initialize...');
+      console.log('[AUTH] Waiting for auth to initialize...');
       return;
     }
 
     // STEP 2: Wait for userData to be synced (this confirms Firebase auth is complete)
     if (!userData || !userData.id) {
-      console.log('⏳ Waiting for user data to sync...');
+      console.log('[AUTH] Waiting for user data to sync...');
       return;
     }
 
     // STEP 3: Check if user is authenticated (after userData is loaded)
     if (!dbUser || dbUser._isFallback) {
-      console.log('❌ User not authenticated, redirecting to login...');
+      console.log('[AUTH] User not authenticated, redirecting to login...');
       // Save the current URL (including roomId) to redirect back after login
       const currentPath = window.location.pathname + window.location.search;
       localStorage.setItem('redirectAfterLogin', currentPath);
@@ -80,7 +80,7 @@ export default function MoviePlayer() {
         if (!viewIncremented) {
           await movieApi.incrementView(id);
           setViewIncremented(true);
-          console.log('✅ View count incremented');
+          console.log('[SUCCESS] View count incremented');
         }
       } catch (error) {
         console.error("Error fetching movie:", error);
@@ -116,7 +116,7 @@ export default function MoviePlayer() {
       }, 300);
       
       // Show success message based on previous state
-      toast.success(wasLiked ? "Removed from favorites! 💔" : "Added to favorites! ❤️");
+      toast.success(wasLiked ? 'Removed from favorites!' : 'Added to favorites!');
     } catch (error) {
       console.error("Error toggling favorite:", error);
       toast.error("Failed to update favorites");
@@ -140,7 +140,7 @@ export default function MoviePlayer() {
     
     const shareUrl = `${window.location.origin}/player/${id}?roomId=${activeRoomId}`;
     navigator.clipboard.writeText(shareUrl)
-      .then(() => toast.success('Room link copied to clipboard! 📋'))
+      .then(() => toast.success('Room link copied to clipboard!'))
       .catch(() => toast.error('Failed to copy link'));
   };
 
@@ -239,7 +239,7 @@ export default function MoviePlayer() {
               {/* Rating */}
               {movie.imdbRating && (
                 <div className="flex items-center gap-2">
-                  <span className="text-yellow-400 text-xl">⭐</span>
+                  <span className="text-yellow-400 text-xl">Rating:</span>
                   <span className="font-semibold text-lg">{movie.imdbRating}/10</span>
                 </div>
               )}

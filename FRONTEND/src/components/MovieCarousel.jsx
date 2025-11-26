@@ -18,18 +18,18 @@ const MovieCarousel = () => {
 
   useEffect(() => {
     if (!user || !authInitialized) {
-      console.log('🎠 Carousel: Waiting for auth...');
+      console.log('[AUTH] Carousel: Waiting for auth...');
       setLoading(false);
       return; // Don't fetch if not logged in or auth not initialized
     }
 
     const fetchRandomMovies = async () => {
-      console.log('🎠 Fetching carousel movies...');
+      console.log('[FETCH] Fetching carousel movies...');
       try {
         // Fetch movies with a reasonable page size to get variety for carousel
         const response = await movieApi.fetchMovies({ page: 0, size: 50 });
         const allMovies = response.content || [];
-        console.log('🎠 Carousel movies fetched:', allMovies.length);
+        console.log('[SUCCESS] Carousel movies fetched:', allMovies.length);
         
         // Get 3 random movies
         const shuffled = [...allMovies].sort(() => 0.5 - Math.random());
@@ -37,7 +37,7 @@ const MovieCarousel = () => {
         
         setFeaturedMovies(randomMovies);
       } catch (error) {
-        console.error('❌ Carousel error:', error);
+        console.error('[ERROR] Carousel error:', error);
         console.error('Error details:', {
           message: error.message,
           response: error.response,
@@ -140,7 +140,7 @@ const MovieCarousel = () => {
                     }
                   </p>
                   <p className="carousel-detail">
-                    <strong>Rating:</strong> ⭐ {rating}/10
+                    <strong>Rating:</strong> {rating}/10
                   </p>
                   <p className="carousel-detail">
                     <strong>Year:</strong> {year}

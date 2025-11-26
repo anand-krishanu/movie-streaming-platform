@@ -107,7 +107,7 @@ export default function FavouritesPage() {
 
         {favoriteMovies.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">❤️</div>
+            <div className="text-6xl mb-4"></div>
             <h2 className="text-2xl font-semibold mb-2">No favorites yet</h2>
             <p className="text-gray-400 mb-6">Start adding movies to your favorites!</p>
             <button

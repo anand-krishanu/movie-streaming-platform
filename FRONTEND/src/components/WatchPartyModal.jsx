@@ -12,7 +12,7 @@ export default function WatchPartyModal({ isOpen, onClose, movieId, onRoomCreate
     setLoading(true);
     try {
       const data = await createWatchParty(movieId);
-      toast.success('Watch party created! 🎉');
+      toast.success('Watch party created!');
       onRoomCreated(data.roomId);
       onClose();
     } catch (error) {
@@ -32,7 +32,7 @@ export default function WatchPartyModal({ isOpen, onClose, movieId, onRoomCreate
     setLoading(true);
     try {
       await joinWatchParty(roomId.trim());
-      toast.success('Joined watch party! 🎉');
+      toast.success('Joined watch party!');
       onRoomCreated(roomId.trim());
       onClose();
     } catch (error) {

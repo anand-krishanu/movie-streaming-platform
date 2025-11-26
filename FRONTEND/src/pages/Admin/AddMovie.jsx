@@ -114,7 +114,7 @@ const AddMovie = () => {
       
       uploadData.append('file', formData.file);
 
-      console.log('📤 Uploading movie...');
+      console.log('[UPLOAD] Uploading movie...');
       const response = await axiosInstance.post('/movies/upload', uploadData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -125,7 +125,7 @@ const AddMovie = () => {
         }
       });
 
-      console.log('✅ Movie uploaded successfully:', response.data);
+      console.log('[SUCCESS] Movie uploaded successfully:', response.data);
       toast.success('Movie uploaded successfully! Processing will begin shortly.');
       
       // Reset form
@@ -147,7 +147,7 @@ const AddMovie = () => {
       }, 2000);
 
     } catch (error) {
-      console.error('❌ Error uploading movie:', error);
+      console.error('[ERROR] Error uploading movie:', error);
       toast.error(error.response?.data?.message || 'Failed to upload movie. Please try again.');
     } finally {
       setLoading(false);
@@ -326,7 +326,7 @@ const AddMovie = () => {
 
           {/* Info Section */}
           <div className="mt-8 bg-zinc-900 rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-3">ℹ️ Processing Information</h2>
+            <h2 className="text-xl font-semibold mb-3">Processing Information</h2>
             <ul className="space-y-2 text-gray-400">
               <li>• After upload, the video will be processed for HLS streaming</li>
               <li>• Thumbnails will be automatically generated</li>
