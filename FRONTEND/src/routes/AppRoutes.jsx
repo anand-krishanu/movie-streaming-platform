@@ -10,7 +10,7 @@ import AddMovie from "../pages/Admin/AddMovie.jsx";
 import AdminDashboard from "../pages/Admin/AdmnDashboard.jsx";
 // import MovieDetails from "../pages/Movie/MovieDetails.jsx";
 // import WatchPage from "../pages/Watch/WatchPage.jsx";
-// import SearchResults from "../pages/Search/SearchResults.jsx";
+import SearchResults from "../pages/Search/SearchResults.jsx";
 import LandingPage from "../pages/Landing/LandingPage.jsx";
 import NotFound from "../pages/NotFound/NotFound.jsx";
 import MoviePlayer from "../pages/Movie/MoviePlayer.jsx";
@@ -28,7 +28,7 @@ const appRoutes = createBrowserRouter([
   { path: "/admin/add-movie", element: <AddMovie /> },
   { path: "/player/:id", element: <MoviePlayer /> },
   // { path: "/watch/:id", element: <WatchPage /> },
-  // { path: "/search", element: <SearchResults /> },
+  { path: "/search", element: <SearchResults /> },
   { path: "*", element: <NotFound /> },
 ]);
 

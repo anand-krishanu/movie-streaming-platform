@@ -1,0 +1,324 @@
+Movie Streaming Platform - Project Report
+
+Table of Contents
+
+S.No | Section | Page No.
+1 | Project Description | 3
+2 | Problem Statement | 4
+3 | Analysis | 5
+3.1 | Hardware Requirements | 5
+3.2 | Software Requirements | 6
+4 | Design | 7
+4.1 | Data/Input Output Description | 7
+4.2 | Algorithmic Approach / Algorithm / DFD / ER diagram / Program Steps | 8
+5 | Implementation and Testing (stage/module wise) | 10
+6 | Output (Screenshots) | 12
+7 | Conclusion and Future Scope | 13
+
+1. Project Description
+
+The Movie Streaming Platform started as a frontend-only React application with a Netflix-like UI. It focused on responsive design, interactive components, and seamless navigation. For a hackathon, the project was expanded into a full-stack platform with backend services, a machine learning recommendation system, real-time watch party features, and HLS-based streaming.
+
+Key Features
+
+Original Frontend-Only Features:
+- Modern React UI (React + Vite)
+- Responsive design (TailwindCSS)
+- Movie browsing with grid and pagination
+- Client-side search and genre filtering
+- Interactive components (cards, modals, navbar)
+- Netflix-like interface (using mock/stub data initially)
+
+Hackathon Backend Additions:
+- User authentication (Firebase Google OAuth)
+- Persistent data (MongoDB)
+- User profiles (favorites, watch history)
+- Watch Party (synchronized playback via WebSocket)
+- ML-based recommendations (Python service)
+- Admin dashboard (upload/manage movies)
+- Video streaming (HLS with adaptive qualities)
+- WebSocket integration for real-time events
+
+Technology Stack
+
+Frontend:
+- React (with hooks and functional components)
+- Vite (fast dev/build tooling)
+- TailwindCSS (utility-first styling)
+- Zustand (lightweight state management)
+- React Router (routing)
+
+Backend:
+- Spring Boot (Java)
+- MongoDB (NoSQL)
+- Firebase Admin SDK (auth token validation)
+- Axios (HTTP client from frontend)
+- WebSocket/STOMP (real-time)
+- Python + FastAPI (ML recommendation service)
+- FFmpeg (HLS video processing)
+
+2. Problem Statement
+
+Initial Challenge (Frontend-only):
+Build a modern, responsive streaming UI showcasing advanced React skills with mock data.
+
+Hackathon Challenge:
+Transform the frontend app into a full streaming platform with:
+- Intuitive UX and reliable search
+- Secure authentication (OAuth)
+- Admin content management
+- Scalable NoSQL data model
+- Adaptive HLS streaming
+- Personalization (favorites/history/recommendations)
+
+Objectives:
+- User-friendly navigation
+- Secure authentication
+- Efficient admin panel
+- Scalable database design
+- Adaptive video streaming
+- Personalized experiences
+
+3. Analysis
+
+3.1 Hardware Requirements
+Minimum:
+- CPU: Dual-core 2.0 GHz
+- RAM: 4 GB
+- Storage: 10 GB free
+- Network: 5 Mbps
+- Display: 1024x768
+
+Recommended:
+- CPU: Quad-core 3.0 GHz+
+- RAM: 8 GB
+- Storage: 20 GB SSD
+- Network: 25 Mbps+
+- Display: 1920x1080
+
+Server:
+- CPU: 8+ cores
+- RAM: 16–32 GB
+- Storage: 500 GB SSD
+- Network: 100 Mbps+
+- GPU: Optional for video processing
+
+3.2 Software Requirements
+Development:
+- OS: Windows/macOS/Linux
+- Node.js (Frontend)
+- Java (Backend)
+- MongoDB
+- Maven (Backend build)
+
+Runtime:
+- Modern browsers (Chrome/Firefox/Safari/Edge)
+- JRE for Spring Boot
+- MongoDB server
+- FFmpeg
+
+Tools:
+- VS Code / IntelliJ IDEA
+- Git + GitHub
+- npm/yarn, Maven
+- Jest (frontend), JUnit (backend)
+- Postman / curl
+
+4. Design
+
+4.1 Data / Input-Output Description
+Input:
+- Auth data (Google OAuth tokens)
+- Movie data (files, metadata, poster URLs)
+- User interactions (search, favorites, watchlist)
+
+Output:
+- Movie listings (paginated, filtered, searched)
+- User dashboard (history, favorites, recommendations)
+- Video streams (HLS playlists, thumbnails)
+
+Data Flow:
+User → Frontend (React) → Axios → Backend (Spring Boot) → MongoDB → Response → Frontend UI
+
+4.2 Architecture & Schemas
+
+System Architecture:
+Frontend (React, 5173) ↔ Backend (Spring Boot, 8080) ↔ Database (MongoDB, 27017)
+Frontend ↔ Firebase (Auth)
+
+Users Collection (MongoDB):
+{
+  _id: "firebaseUserId",
+  email: "user@example.com",
+  name: "User Name",
+  picture: "profile_url",
+  role: "USER" | "ADMIN",
+  watchLaterMovieIds: ["movieId1", "movieId2"],
+  favoriteMovieIds: ["movieId1", "movieId3"],
+  createdAt: ISODate,
+  updatedAt: ISODate
+}
+
+Movies Collection (MongoDB):
+{
+  _id: "movieId",
+  movieTitle: "Movie Title",
+  movieDescription: "Description",
+  moviePoster: "poster_url",
+  genres: ["Action", "Drama"],
+  imdbRating: 8.5,
+  releaseDate: ISODate,
+  videoDetails: {
+    originalFileName: "movie.mp4",
+    sizeInBytes: 1000000,
+    durationSeconds: 7200,
+    hlsMasterUrl: "playlist.m3u8",
+    thumbnailSpriteUrl: "thumbnails.jpg",
+    processingCompleted: true
+  },
+  statistics: {
+    views: 1000,
+    likes: 250,
+    likedByUserIds: ["userId1", "userId2"]
+  },
+  createdAt: ISODate
+}
+
+Authentication Steps:
+1. Login via Google (Firebase OAuth)
+2. Receive ID token
+3. Store token client-side
+4. Send token in Authorization header
+5. Backend validates via Firebase Admin
+6. Create/update user in MongoDB
+7. Return user data
+8. Update frontend state
+
+Movie Upload Steps:
+1. Admin selects file and enters metadata
+2. Frontend validates format/size
+3. Upload via multipart form
+4. Backend stores file
+5. FFmpeg converts to HLS
+6. Generate quality variants
+7. Save metadata to MongoDB
+8. Respond success
+9. Display in admin panel
+
+Search (Backend-driven):
+1. Debounced input (≈300ms)
+2. Call /api/movies/search
+3. Backend text search (MongoDB)
+4. Optional genre filter
+5. Paginated results
+6. Display in frontend
+
+5. Implementation & Testing (Stages)
+
+Stage 1: Setup
+- React + Vite + TailwindCSS
+- Spring Boot + MongoDB
+- Verified dependencies and structure
+
+Stage 2: Authentication
+- Firebase OAuth
+- JWT validation filter (backend)
+- Verified registration/login
+
+Stage 3: Core Movie Features
+- CRUD endpoints
+- Multipart uploads
+- HLS processing
+
+Stage 4: UI Development
+- Responsive grids
+- Search & filters
+- Favorites & history pages
+
+Stage 5: Admin Panel
+- Dashboard for uploads and management
+- Edit/delete operations
+
+Stage 6: Streaming
+- HLS player integration
+- Secure stream endpoints
+- Watch progress tracking
+
+Testing Summary:
+- Unit tests: solid coverage
+- Integration tests: endpoints validated
+- UAT: high satisfaction
+- Performance: fast page loads
+
+6. Output (Screenshots)
+
+Examples (placeholders):
+- Landing page
+- Movie grid
+- User dashboard
+- Admin panel
+- Video player
+- Database queries & API responses
+
+7. Conclusion & Future Scope
+
+Achievements:
+- Full-stack app with modern tech
+- Responsive, accessible UI
+- Real-time watch party
+- Secure OAuth authentication
+- ML recommendations
+- Adaptive HLS streaming
+- Scalable backend
+
+Learnings:
+- Frontend + Backend integration
+- NoSQL schema design
+- Auth & security best practices
+- Video encoding & streaming
+- DevOps & testing workflows
+
+Challenges Overcome:
+- Port conflicts
+- Firebase + Spring integration
+- MongoDB schema modeling
+- FFmpeg integration
+- CORS configuration
+
+Future Scope:
+Short-term (3–6 months):
+- Watch party chat & host controls
+- PWA capabilities
+- Improved ML algorithms
+- Reviews/ratings/social sharing
+- React Native mobile apps
+- Advanced search (Elasticsearch)
+
+Medium-term (6–12 months):
+- Live streaming
+- Offline viewing
+- Internationalization (i18n)
+- Analytics dashboards
+- CDN integration
+
+Long-term (1–2 years):
+- AI-powered personalization/moderation
+- Multi-tenant architecture
+- VR streaming
+- Advanced video (4K/HDR/360°)
+
+Performance Metrics:
+- Fast loads
+- Scalable for concurrent users
+- High uptime
+- Strong security posture
+- Positive UX ratings
+
+Business Impact:
+Modular architecture suitable for production streaming use cases across education, training, and entertainment.
+
+Project Team: Ronit Bajaj
+Academic Year: 2024–25
+Technology Stack: React, Spring Boot, MongoDB, Firebase, Python ML
+Development Duration: 6 weeks
+Approx. Lines of Code: ~15,000

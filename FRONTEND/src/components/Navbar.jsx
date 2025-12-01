@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../context/useAuthStore";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import SearchBar from "./SearchBar";
 
 export default function Navbar() {
   const { pathname } = useLocation();
@@ -75,6 +76,9 @@ export default function Navbar() {
           </Link>
         ))}
       </div>
+
+      {/* Search Bar - only show when logged in */}
+      {user && <SearchBar />}
 
       <div className="flex gap-4 items-center">
         {dbUser?.role === "ADMIN" && (
