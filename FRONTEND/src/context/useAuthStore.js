@@ -89,6 +89,10 @@ const useAuthStore = create(
     }),
     {
       name: "auth-storage", // Persist to localStorage
+      partialize: (state) => ({ 
+        dbUser: state.dbUser, 
+        userData: state.userData 
+      }), // Only persist user data, not auth state or firebase user object
     }
   )
 );
