@@ -39,6 +39,9 @@ public class VideoProcessingService {
             // 3. Generate 5-Second Preview GIF (For hover effect)
             String previewGifPath = generatePreviewGif(inputFile, outputDir);
 
+            // 4. Generate Timeline Thumbnails (Every 10s)
+            String timelineThumbnailsPattern = generateTimelineThumbnails(inputFile, outputDir);
+
             log.info("✅ Pipeline Finished for Movie ID: {}", movieId);
 
             // Return the relative paths (Assuming you serve static files from outputDir)
@@ -46,7 +49,8 @@ public class VideoProcessingService {
             return CompletableFuture.completedFuture(new VideoProcessingResult(
                     masterPlaylist,
                     thumbnailPath,
-                    previewGifPath
+                    previewGifPath,
+                    timelineThumbnailsPattern
             ));
 
         } catch (Exception e) {
@@ -130,6 +134,24 @@ public class VideoProcessingService {
 
         runProcess(pb);
         return filename;
+    }
+
+    // --- TASK 4: TIMELINE THUMBNAILS ---
+    private String generateTimelineThumbnails(File input, File outputDir) throws IOException, InterruptedException {
+        // Pattern for filenames: thumb_0001.jpg, thumb_0002.jpg, etc.
+        String filenamePattern = "thumb_%04d.jpg";
+        String outputPath = outputDir.getAbsolutePath() + File.separator + filenamePattern;
+
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffmpeg", "-y",
+                "-i", input.getAbsolutePath(),
+                "-vf", "fps=1/10,scale=160:90", // 1 frame every 10 seconds, resized to 160x90
+                "-q:v", "2",
+                outputPath
+        );
+
+        runProcess(pb);
+        return filenamePattern;
     }
 
     private void runProcess(ProcessBuilder pb) throws IOException, InterruptedException {
