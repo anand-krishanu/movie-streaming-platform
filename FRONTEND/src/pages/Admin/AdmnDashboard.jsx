@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import movieApi from "../../api/movieApi";
 import useAuthStore from "../../context/useAuthStore";
 import { toast } from "react-toastify";
@@ -195,6 +196,7 @@ setTraining(true);
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

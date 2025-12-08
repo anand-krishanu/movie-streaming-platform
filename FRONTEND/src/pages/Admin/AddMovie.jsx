@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../api/axiosInstance';
 import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 
 const AddMovie = () => {
   const navigate = useNavigate();
@@ -336,6 +337,7 @@ const AddMovie = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

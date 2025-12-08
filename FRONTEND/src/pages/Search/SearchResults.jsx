@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 import MovieGrid from '../../components/MovieGrid';
 import movieApi from '../../api/movieApi';
 import { toast } from 'react-toastify';
@@ -87,6 +88,7 @@ export default function SearchResults() {
           <MovieGrid movies={movies} />
         )}
       </div>
+      <Footer />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import SyncedVideoPlayer from "../../components/SyncedVideoPlayer";
 import ParticipantsList from "../../components/ParticipantsList";
 import SimilarMoviesRow from "../../components/SimilarMoviesRow";
@@ -335,6 +336,7 @@ export default function MoviePlayer() {
       movieId={id}
       onRoomCreated={handleRoomCreated}
     />
+    <Footer />
   </div>
   );
 }
