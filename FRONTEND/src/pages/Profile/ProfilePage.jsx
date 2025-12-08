@@ -1,5 +1,6 @@
 import React from "react";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import useAuthStore from "../../context/useAuthStore";
 import { auth } from "../../firebase";
 import { signOut } from "firebase/auth";
@@ -10,6 +11,7 @@ const ProfilePage = () => {
   const user = useAuthStore((state) => state.user);
   const dbUser = useAuthStore((state) => state.dbUser);
   const setUser = useAuthStore((state) => state.setUser);
+  const authInitialized = useAuthStore((state) => state.authInitialized);
 
   const handleLogout = async () => {
     try {
@@ -21,6 +23,14 @@ const ProfilePage = () => {
       alert("Failed to log out. Try again.");
     }
   };
+
+  if (!authInitialized) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
+        <div className="text-xl">Loading profile...</div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -64,6 +74,7 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

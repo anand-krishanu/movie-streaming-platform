@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import MovieGrid from "../../components/MovieGrid";
 import movieApi from "../../api/movieApi";
 import useAuthStore from "../../context/useAuthStore";
@@ -9,68 +10,53 @@ import { useNavigate } from "react-router-dom";
 export default function Watchlist() {
   const [loading, setLoading] = useState(true);
   const [watchLaterMovies, setWatchLaterMovies] = useState([]);
-  const { dbUser, userData, refreshUserData } = useAuthStore();
+  const { dbUser, userData, refreshUserData, authInitialized } = useAuthStore();
   const navigate = useNavigate();
+  const hasRefreshed = useRef(false);
 
   useEffect(() => {
-    if (!dbUser) {
+    if (authInitialized && !dbUser) {
       navigate("/login");
       return;
     }
 
-    fetchWatchLater();
-  }, [dbUser, navigate]);
+    if (!authInitialized) return;
 
-  const fetchWatchLater = async () => {
-    if (!dbUser || dbUser._isFallback) {
-      setLoading(false);
-      return;
+    // Refresh user data on mount to ensure we have latest watch later list
+    if (!hasRefreshed.current && dbUser && !dbUser._isFallback) {
+      hasRefreshed.current = true;
+      refreshUserData().catch(err => console.error(err));
     }
+  }, [dbUser, authInitialized, navigate, refreshUserData]);
 
-    try {
-      // Refresh user data to get latest watchLaterMovieIds
-      await refreshUserData();
-      
-      // Fetch full movie details for each watch later movie ID
-      const watchLaterIds = userData?.watchLaterMovieIds || [];
-      
-      if (watchLaterIds.length > 0) {
+  // Fetch movie details whenever the list of IDs changes
+  useEffect(() => {
+    const fetchMovieDetails = async () => {
+      if (!dbUser) return;
+
+      // If we don't have user data yet, or no watch later movies
+      if (!userData?.watchLaterMovieIds || userData.watchLaterMovieIds.length === 0) {
+        setWatchLaterMovies([]);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const watchLaterIds = userData.watchLaterMovieIds;
         const moviePromises = watchLaterIds.map(id => movieApi.getMovieById(id));
         const movies = await Promise.all(moviePromises);
         setWatchLaterMovies(movies.filter(movie => movie !== null));
-      } else {
-        setWatchLaterMovies([]);
+      } catch (error) {
+        console.error("Error fetching movie details:", error);
+        toast.error("Failed to load watch later list");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching watch later:", error);
-      toast.error("Failed to load watch later list");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  // Refetch when userData changes (e.g., when watch later is toggled)
-  useEffect(() => {
-    if (userData?.watchLaterMovieIds) {
-      const fetchMovieDetails = async () => {
-        const watchLaterIds = userData.watchLaterMovieIds;
-        
-        if (watchLaterIds.length > 0) {
-          try {
-            const moviePromises = watchLaterIds.map(id => movieApi.getMovieById(id));
-            const movies = await Promise.all(moviePromises);
-            setWatchLaterMovies(movies.filter(movie => movie !== null));
-          } catch (error) {
-            console.error("Error fetching movie details:", error);
-          }
-        } else {
-          setWatchLaterMovies([]);
-        }
-      };
-      
-      fetchMovieDetails();
-    }
-  }, [userData?.watchLaterMovieIds]);
+    fetchMovieDetails();
+  }, [userData?.watchLaterMovieIds, dbUser]);
 
   if (loading) {
     return (
@@ -123,6 +109,7 @@ export default function Watchlist() {
           />
         )}
       </div>
+      <Footer />
     </div>
   );
 }

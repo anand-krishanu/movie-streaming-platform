@@ -14,21 +14,22 @@ import SearchResults from "../pages/Search/SearchResults.jsx";
 import LandingPage from "../pages/Landing/LandingPage.jsx";
 import NotFound from "../pages/NotFound/NotFound.jsx";
 import MoviePlayer from "../pages/Movie/MoviePlayer.jsx";
+import AuthGuard from "../components/AuthGuard.jsx";
 
 const appRoutes = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
-  { path: "/home", element: <Home /> },
-  { path: "/watchlist", element: <Watchlist /> },
-  { path: "/history", element: <WatchHistory /> },
-  { path: "/favorites", element: <FavouritesPage /> },
+  { path: "/home", element: <AuthGuard><Home /></AuthGuard> },
+  { path: "/watchlist", element: <AuthGuard><Watchlist /></AuthGuard> },
+  { path: "/history", element: <AuthGuard><WatchHistory /></AuthGuard> },
+  { path: "/favorites", element: <AuthGuard><FavouritesPage /></AuthGuard> },
   { path: "/login", element: <Login /> },
   { path: "/logout", element: <Logout /> },
-  { path: "/profile", element: <ProfilePage /> },
-  { path: "/admin", element: <AdminDashboard /> },
-  { path: "/admin/add-movie", element: <AddMovie /> },
-  { path: "/player/:id", element: <MoviePlayer /> },
+  { path: "/profile", element: <AuthGuard><ProfilePage /></AuthGuard> },
+  { path: "/admin", element: <AuthGuard><AdminDashboard /></AuthGuard> },
+  { path: "/admin/add-movie", element: <AuthGuard><AddMovie /></AuthGuard> },
+  { path: "/player/:id", element: <AuthGuard><MoviePlayer /></AuthGuard> },
   // { path: "/watch/:id", element: <WatchPage /> },
-  { path: "/search", element: <SearchResults /> },
+  { path: "/search", element: <AuthGuard><SearchResults /></AuthGuard> },
   { path: "*", element: <NotFound /> },
 ]);
 

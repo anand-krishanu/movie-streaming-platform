@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import GenreRow from "../../components/GenreRow";
 import MovieCarousel from "../../components/MovieCarousel";
 import RecommendedRow from "../../components/RecommendedRow";
@@ -16,11 +17,11 @@ export default function Home() {
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (!user) {
+    if (authInitialized && !user) {
       toast.info("Please login to browse movies");
       navigate("/login");
     }
-  }, [user, navigate]);
+  }, [user, authInitialized, navigate]);
 
   useEffect(() => {
     if (!user || !authInitialized) {
@@ -98,6 +99,7 @@ export default function Home() {
           ))}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
