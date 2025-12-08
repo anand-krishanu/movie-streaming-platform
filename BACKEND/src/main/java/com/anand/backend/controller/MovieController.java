@@ -29,6 +29,9 @@ public class MovieController {
     private MovieService movieService;
 
     @Autowired
+    private com.anand.backend.service.UserService userService;
+
+    @Autowired
     private MLRecommendationService mlRecommendationService;
 
     @Value("${video.processed.dir:processed}")
@@ -43,14 +46,22 @@ public class MovieController {
     // UPLOAD MOVIE
     // --------------------------------------------------------
     @PostMapping("/upload")
-    public ResponseEntity<Movie> uploadMovie(
+    public ResponseEntity<?> uploadMovie(
             @RequestParam("title") String title,
             @RequestParam("description") String description,
             @RequestParam("imdbRating") Double imdbRating, // Changed to Double
             @RequestParam("genres") List<String> genres,   // Changed to List<String>
             @RequestParam(value = "poster", required = false) String poster, // Movie poster URL
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal Object principal
     ) {
+        com.google.firebase.auth.FirebaseToken token = (com.google.firebase.auth.FirebaseToken) principal;
+        com.anand.backend.entity.User user = userService.getUserByEmail(token.getEmail()).orElse(null);
+
+        if (user == null || user.getRole() != com.anand.backend.enums.UserRole.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             // Note: 'length' and 'language' were removed to match the Service signature
             // We calculate length automatically via FFmpeg in a real app
@@ -94,7 +105,14 @@ public class MovieController {
     // DELETE MOVIE
     // --------------------------------------------------------
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMovie(@PathVariable String id) {
+    public ResponseEntity<Void> deleteMovie(@PathVariable String id, @AuthenticationPrincipal Object principal) {
+        com.google.firebase.auth.FirebaseToken token = (com.google.firebase.auth.FirebaseToken) principal;
+        com.anand.backend.entity.User user = userService.getUserByEmail(token.getEmail()).orElse(null);
+
+        if (user == null || user.getRole() != com.anand.backend.enums.UserRole.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         movieService.deleteMovie(id);
         return ResponseEntity.noContent().build();
     }

@@ -48,14 +48,32 @@ public class AuthController {
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<?> getAllUsers(@AuthenticationPrincipal Object principal) {
+        FirebaseToken token = (FirebaseToken) principal;
+        User currentUser = userService.getUserByEmail(token.getEmail()).orElse(null);
+
+        if (currentUser == null || currentUser.getRole() != com.anand.backend.enums.UserRole.ADMIN) {
+            return ResponseEntity.status(403).body("Access Denied: Admins only");
+        }
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable String id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getUserById(@PathVariable String id, @AuthenticationPrincipal Object principal) {
+        FirebaseToken token = (FirebaseToken) principal;
+        User currentUser = userService.getUserByEmail(token.getEmail()).orElse(null);
+
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        // Allow if Admin OR if requesting own profile
+        if (currentUser.getRole() == com.anand.backend.enums.UserRole.ADMIN || currentUser.getId().equals(id)) {
+            return userService.getUserById(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
+
+        return ResponseEntity.status(403).body("Access Denied");
     }
 }
