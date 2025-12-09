@@ -49,7 +49,7 @@ const ProfilePage = () => {
   return (
     <div className="bg-black min-h-screen text-white">
       <Navbar />
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] pt-20">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] pt-20 pb-20">
         <div className="bg-zinc-900 p-10 rounded-2xl shadow-xl text-center w-96">
           <img
             src={user.photoURL || dbUser?.picture || "https://via.placeholder.com/150"}

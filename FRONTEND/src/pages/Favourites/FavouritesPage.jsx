@@ -83,7 +83,7 @@ export default function FavouritesPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
-      <div className="pt-20 px-8">
+      <div className="pt-20 px-8 pb-20">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">My Favorites</h1>
           <p className="text-gray-400">

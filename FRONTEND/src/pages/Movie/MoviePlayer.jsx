@@ -164,7 +164,7 @@ export default function MoviePlayer() {
     <div className="bg-black text-white min-h-screen">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-20">
+      <div className="container mx-auto px-4 pt-20 pb-20">
         {/* Video Player */}
         <div className="mb-8">
           <SyncedVideoPlayer

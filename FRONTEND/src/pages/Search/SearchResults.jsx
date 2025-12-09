@@ -70,9 +70,9 @@ export default function SearchResults() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
-      <div className="pt-20 px-8">
+      <div className="pt-20 px-8 pb-20">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Search Results</h1>
+          <h1 className="text-3xl font-bold mb-2">Search Results for "{query}"</h1>
           <p className="text-gray-400">
             {movies.length} result{movies.length !== 1 ? 's' : ''} for "{query}"
           </p>
