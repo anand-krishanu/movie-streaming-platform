@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 export default function Home() {
   const [moviesByGenre, setMoviesByGenre] = useState({});
   const [loading, setLoading] = useState(true);
-  const { user, dbUser, authInitialized } = useAuthStore();
+  const { user, authInitialized } = useAuthStore();
   const navigate = useNavigate();
 
   // Redirect to login if not authenticated
