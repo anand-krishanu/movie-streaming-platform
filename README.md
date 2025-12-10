@@ -5,6 +5,8 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
 ## 🌟 Features
 
 - **🎥 Adaptive Video Streaming**: HLS (HTTP Live Streaming) with multiple quality levels (360p-1080p)
+- **⏯️ Custom Video Player**: Sleek custom UI with volume/playback controls and keyboard shortcuts
+- **🎞️ Smart Timeline**: Netflix-style thumbnail previews when hovering over the progress bar
 - **🤖 AI Recommendations**: Hybrid ML model using Collaborative Filtering, Content-Based, and Popularity algorithms
 - **👥 Watch Parties**: Real-time synchronized viewing with WebSocket technology
 - **🔐 Secure Authentication**: Firebase Google OAuth integration
@@ -38,17 +40,17 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
 - **Styling**: TailwindCSS
 - **State Management**: Zustand
 - **Routing**: React Router DOM
-- **Video Player**: React Player (HLS support)
+- **Video Player**: Custom HLS Player with Thumbnail Previews
 - **Real-time**: STOMP WebSocket Client
 - **HTTP Client**: Axios
 - **UI Components**: React Icons, React Toastify
 
 ### Backend
 - **Framework**: Spring Boot 3.x (Java)
-- **Security**: Spring Security + Firebase Admin SDK
+- **Security**: Spring Security + Firebase Admin SDK + Custom Auth Filters
 - **Database**: MongoDB (Spring Data MongoDB)
 - **WebSocket**: Spring WebSocket (STOMP protocol)
-- **Video Processing**: FFmpeg
+- **Video Processing**: FFmpeg (HLS segmentation + Thumbnail generation)
 - **Build Tool**: Maven
 
 ### ML Service
@@ -342,6 +344,10 @@ spring.servlet.multipart.max-file-size=2GB
 
 - **Firebase JWT Authentication**: Secure token-based auth
 - **Spring Security**: Role-based access control (ADMIN/USER)
+- **Endpoint Protection**: 
+  - `getAllUsers` restricted to ADMIN only
+  - `uploadMovie` / `deleteMovie` restricted to ADMIN only
+  - User profile access restricted to owner or ADMIN
 - **CORS Configuration**: Controlled cross-origin requests
 - **WebSocket Security**: Authenticated connections only
 - **Password-less Auth**: OAuth 2.0 via Google
