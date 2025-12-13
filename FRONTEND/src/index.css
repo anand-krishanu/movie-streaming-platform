@@ -26,6 +26,7 @@
     height: 0 !important;
   }
 
+  /* Animations */
   @keyframes scaleIn {
     from {
       transform: scale(0.8);
@@ -35,5 +36,35 @@
       transform: scale(1);
       opacity: 1;
     }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      max-height: 0;
+      opacity: 0;
+    }
+    to {
+      max-height: 80px;
+      opacity: 1;
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.3s ease-out;
   }
 }
