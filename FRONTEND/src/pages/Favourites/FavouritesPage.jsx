@@ -44,7 +44,12 @@ export default function FavouritesPage() {
       setLoading(true);
       try {
         const favoriteIds = userData.favoriteMovieIds;
-        const moviePromises = favoriteIds.map(id => movieApi.getMovieById(id));
+        const moviePromises = favoriteIds.map(id => 
+          movieApi.getMovieById(id).catch(err => {
+            console.warn(`Could not fetch movie with id ${id}`, err);
+            return null;
+          })
+        );
         const movies = await Promise.all(moviePromises);
         setFavoriteMovies(movies.filter(movie => movie !== null));
       } catch (error) {

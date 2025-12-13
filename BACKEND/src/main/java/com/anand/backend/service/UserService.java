@@ -53,10 +53,22 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new RuntimeException("Movie not found"));
-        
         boolean isRemoving = user.getFavoriteMovieIds().contains(movieId);
+
+        Optional<Movie> movieOpt = movieRepository.findById(movieId);
+        
+        if (movieOpt.isEmpty()) {
+            if (isRemoving) {
+                log.warn("⚠️ Movie {} not found, but removing from user favorites (cleanup)", movieId);
+                user.getFavoriteMovieIds().remove(movieId);
+                userRepository.save(user);
+                return;
+            }
+            throw new RuntimeException("Movie not found");
+        }
+
+        Movie movie = movieOpt.get();
+
         log.info("📊 Current state - isRemoving: {}, currentLikes: {}", isRemoving,
             (movie.getStatistics() != null ? movie.getStatistics().getLikes() : "null"));
         
