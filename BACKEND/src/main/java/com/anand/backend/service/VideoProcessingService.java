@@ -73,6 +73,9 @@ public class VideoProcessingService {
                         "[v2]scale=w=1280:h=720[v2out];" +
                         "[v3]scale=w=854:h=480[v3out]",
 
+                // Global options
+                "-preset", "ultrafast", "-threads", "0",
+
                 // 1080p Stream
                 "-map", "[v1out]", "-c:v:0", "libx264", "-b:v:0", "5000k", "-maxrate:v:0", "5350k", "-bufsize:v:0", "7500k",
                 "-map", "a:0", "-c:a:0", "aac", "-b:a:0", "192k",

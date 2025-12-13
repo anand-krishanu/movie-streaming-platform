@@ -221,9 +221,7 @@ public class MovieService {
         details.setProcessingCompleted(true);
         details.setHlsMasterUrl(streamingBaseUrl + result.masterPlaylistFilename());
         details.setThumbnailSpriteUrl(streamingBaseUrl + result.thumbnailFilename());
-
-        // If you added GIF support in Entity/DTO:
-        // details.setPreviewGifUrl(streamingBaseUrl + result.previewGifFilename());
+        details.setPreviewGifUrl(streamingBaseUrl + result.previewGifFilename());
 
         movieRepository.save(movie);
         log.info("Movie {} processing COMPLETED. URLs updated.", movieId);

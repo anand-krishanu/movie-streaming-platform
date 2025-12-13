@@ -45,6 +45,7 @@ public class Movie {
         private String hlsMasterUrl;
 
         private String thumbnailSpriteUrl;
+        private String previewGifUrl;
         private boolean processingCompleted;
     }
 

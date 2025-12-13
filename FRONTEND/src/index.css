@@ -25,4 +25,15 @@
     width: 0 !important;
     height: 0 !important;
   }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
 }
