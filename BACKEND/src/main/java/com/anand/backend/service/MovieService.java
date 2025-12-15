@@ -47,6 +47,7 @@ public class MovieService {
             Double imdbRating,
             List<String> genres,
             String poster,
+            Integer releaseYear,
             MultipartFile file
     ) throws IOException {
 
@@ -78,6 +79,7 @@ public class MovieService {
                 .moviePoster(poster) // Add poster URL
                 .genres(genres)
                 .imdbRating(imdbRating) // Note: field name is camelCase in Entity
+                .releaseYear(releaseYear)
                 .videoDetails(videoDetails)
                 .build();
 
@@ -222,6 +224,7 @@ public class MovieService {
         details.setHlsMasterUrl(streamingBaseUrl + result.masterPlaylistFilename());
         details.setThumbnailSpriteUrl(streamingBaseUrl + result.thumbnailFilename());
         details.setPreviewGifUrl(streamingBaseUrl + result.previewGifFilename());
+        details.setDurationSeconds(result.durationSeconds());
 
         movieRepository.save(movie);
         log.info("Movie {} processing COMPLETED. URLs updated.", movieId);

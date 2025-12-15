@@ -4,5 +4,6 @@ public record VideoProcessingResult(
         String masterPlaylistFilename,
         String thumbnailFilename,
         String previewGifFilename,
-        String timelineThumbnailsPattern
+        String timelineThumbnailsPattern,
+        Integer durationSeconds
 ) {}

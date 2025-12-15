@@ -7,8 +7,50 @@ import useAuthStore from "../context/useAuthStore";
 
 const MoviePlayerComponent = ({ movieId, poster }) => {
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const progressIntervalRef = useRef(null);
   const { dbUser } = useAuthStore();
+
+  // Ambient Mode Effect
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const ctx = canvas.getContext("2d", {
+      alpha: false, // Optimization: We don't need transparency
+      desynchronized: true, // Optimization: Hint to browser to bypass compositor
+    });
+    let animationFrameId;
+
+    const drawAmbient = () => {
+      if (!video.paused && !video.ended) {
+        // Draw the current video frame to the canvas
+        // The canvas is small (set in JSX), so this is very fast
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        animationFrameId = requestAnimationFrame(drawAmbient);
+      }
+    };
+
+    const handlePlay = () => {
+      drawAmbient();
+    };
+
+    const handlePause = () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+    video.addEventListener("ended", handlePause);
+
+    return () => {
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+      video.removeEventListener("ended", handlePause);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -88,13 +130,27 @@ const MoviePlayerComponent = ({ movieId, poster }) => {
 
   return (
     <div className="flex flex-col items-center w-full max-w-5xl mx-auto py-10 px-4">
-      <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-lg">
-        <video
-          ref={videoRef}
-          poster={poster}
-          controls
-          className="w-full h-full"
+      {/* Container for Video + Ambient Background */}
+      <div className="relative w-full aspect-video">
+        {/* Ambient Canvas - Positioned behind with heavy blur */}
+        <canvas
+          ref={canvasRef}
+          width={100} // Low internal resolution for performance
+          height={56} // 16:9 aspect ratio
+          className="absolute top-0 left-0 w-full h-full -z-10 blur-3xl opacity-60 scale-110 transition-opacity duration-500"
+          aria-hidden="true"
         />
+        
+        {/* Main Video Player */}
+        <div className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-lg z-10">
+          <video
+            ref={videoRef}
+            poster={poster}
+            controls
+            className="w-full h-full"
+            crossOrigin="anonymous" // Important for canvas security if video is from different domain
+          />
+        </div>
       </div>
     </div>
   );

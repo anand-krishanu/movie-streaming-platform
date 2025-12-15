@@ -42,6 +42,9 @@ public class VideoProcessingService {
             // 4. Generate Timeline Thumbnails (Every 10s)
             String timelineThumbnailsPattern = generateTimelineThumbnails(inputFile, outputDir);
 
+            // 5. Get Duration
+            Integer durationSeconds = getDuration(inputFile);
+
             log.info("✅ Pipeline Finished for Movie ID: {}", movieId);
 
             // Return the relative paths (Assuming you serve static files from outputDir)
@@ -50,7 +53,8 @@ public class VideoProcessingService {
                     masterPlaylist,
                     thumbnailPath,
                     previewGifPath,
-                    timelineThumbnailsPattern
+                    timelineThumbnailsPattern,
+                    durationSeconds
             ));
 
         } catch (Exception e) {
@@ -170,5 +174,26 @@ public class VideoProcessingService {
         if (exitCode != 0) {
             throw new IOException("FFmpeg process failed with exit code " + exitCode);
         }
+    }
+
+    private Integer getDuration(File input) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1",
+                    input.getAbsolutePath()
+            );
+            Process process = pb.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = reader.readLine();
+            process.waitFor();
+            
+            if (line != null) {
+                return (int) Math.round(Double.parseDouble(line));
+            }
+        } catch (Exception e) {
+            log.error("Failed to get video duration", e);
+        }
+        return 0;
     }
 }

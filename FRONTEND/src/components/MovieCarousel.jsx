@@ -114,7 +114,7 @@ const MovieCarousel = () => {
           const rating = movie.imdbRating || movie.rating || 'N/A';
           const description = movie.movieDescription || movie.description || 'No description available';
           const duration = movie.videoDetails?.durationSeconds ? Math.floor(movie.videoDetails.durationSeconds / 60) : (movie.duration || 'N/A');
-          const year = movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : (movie.year || 'N/A');
+          const year = movie.releaseYear || (movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : (movie.year || 'N/A'));
           
           return (
           <SwiperSlide key={movieId}>

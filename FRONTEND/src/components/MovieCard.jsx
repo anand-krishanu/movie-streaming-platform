@@ -39,7 +39,7 @@ const MovieCard = ({ movie }) => {
     ? `${Math.floor(movie.videoDetails.durationSeconds / 60)}m` 
     : 'N/A';
   
-  const releaseYear = movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : (movie.year || 'N/A');
+  const releaseYear = movie.releaseYear || (movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : (movie.year || 'N/A'));
   const matchPercentage = rating !== 'N/A' ? `${Math.round(parseFloat(rating) * 10)}% Match` : 'New';
 
   const isInWatchLater = userData?.watchLaterMovieIds?.includes(movieId);

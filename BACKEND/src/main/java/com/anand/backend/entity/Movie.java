@@ -24,6 +24,7 @@ public class Movie {
     private List<String> genres;
     private Double imdbRating;
     private Instant releaseDate;
+    private Integer releaseYear;
 
     private VideoDetails videoDetails;
 

@@ -52,6 +52,7 @@ public class MovieController {
             @RequestParam("imdbRating") Double imdbRating, // Changed to Double
             @RequestParam("genres") List<String> genres,   // Changed to List<String>
             @RequestParam(value = "poster", required = false) String poster, // Movie poster URL
+            @RequestParam(value = "releaseYear", required = false) Integer releaseYear,
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal Object principal
     ) {
@@ -71,6 +72,7 @@ public class MovieController {
                     imdbRating,
                     genres,
                     poster,
+                    releaseYear,
                     file
             );
             return ResponseEntity.ok(saved);

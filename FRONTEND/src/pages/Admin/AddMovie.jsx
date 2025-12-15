@@ -12,6 +12,7 @@ const AddMovie = () => {
     title: '',
     description: '',
     imdbRating: '',
+    releaseYear: '',
     genres: [],
     poster: '',
     file: null
@@ -103,6 +104,9 @@ const AddMovie = () => {
       uploadData.append('title', formData.title);
       uploadData.append('description', formData.description);
       uploadData.append('imdbRating', parseFloat(formData.imdbRating));
+      if (formData.releaseYear) {
+        uploadData.append('releaseYear', parseInt(formData.releaseYear));
+      }
       
       // Append each genre separately
       formData.genres.forEach(genre => {
@@ -134,6 +138,7 @@ const AddMovie = () => {
         title: '',
         description: '',
         imdbRating: '',
+        releaseYear: '',
         genres: [],
         poster: '',
         file: null
@@ -199,24 +204,43 @@ const AddMovie = () => {
               />
             </div>
 
-            {/* IMDB Rating */}
-            <div>
-              <label htmlFor="imdbRating" className="block text-lg font-semibold mb-2">
-                IMDB Rating * (0-10)
-              </label>
-              <input
-                type="number"
-                id="imdbRating"
-                name="imdbRating"
-                value={formData.imdbRating}
-                onChange={handleInputChange}
-                step="0.1"
-                min="0"
-                max="10"
-                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-red-500 text-white"
-                placeholder="e.g., 8.5"
-                required
-              />
+            {/* IMDB Rating & Release Year */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="imdbRating" className="block text-lg font-semibold mb-2">
+                  IMDB Rating * (0-10)
+                </label>
+                <input
+                  type="number"
+                  id="imdbRating"
+                  name="imdbRating"
+                  value={formData.imdbRating}
+                  onChange={handleInputChange}
+                  step="0.1"
+                  min="0"
+                  max="10"
+                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-red-500 text-white"
+                  placeholder="e.g., 8.5"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="releaseYear" className="block text-lg font-semibold mb-2">
+                  Release Year
+                </label>
+                <input
+                  type="number"
+                  id="releaseYear"
+                  name="releaseYear"
+                  value={formData.releaseYear}
+                  onChange={handleInputChange}
+                  min="1900"
+                  max={new Date().getFullYear() + 5}
+                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-red-500 text-white"
+                  placeholder="e.g., 2024"
+                />
+              </div>
             </div>
 
             {/* Genres */}
