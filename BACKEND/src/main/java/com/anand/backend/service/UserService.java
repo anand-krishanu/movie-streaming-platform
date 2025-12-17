@@ -207,7 +207,19 @@ public class UserService {
     public List<WatchProgress> getContinueWatching(String userId) {
         return watchProgressRepository.findByUserIdOrderByLastWatchedAtDesc(userId);
     }
-
+    /**
+     * Retrieves the specific watch progress for a user and a movie.
+     * <p>
+     * Used to resume playback from the last saved position.
+     * </p>
+     *
+     * @param userId  The ID of the user.
+     * @param movieId The ID of the movie.
+     * @return An Optional containing the WatchProgress if found.
+     */
+    public Optional<WatchProgress> getWatchProgress(String userId, String movieId) {
+        return watchProgressRepository.findByUserIdAndMovieId(userId, movieId);
+    }
     // --- BASIC GETTERS ---
     public Optional<User> getUserById(String id) {
         return userRepository.findById(id);

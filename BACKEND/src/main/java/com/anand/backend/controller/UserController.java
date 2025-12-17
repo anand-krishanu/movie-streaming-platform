@@ -139,4 +139,24 @@ public class UserController {
         String userId = getUserId(principal);
         return ResponseEntity.ok(userService.getContinueWatching(userId));
     }
+
+    /**
+     * Retrieves the playback progress for a specific movie.
+     * <p>
+     * Used by the video player to resume playback from the last saved position.
+     * Returns 404 Not Found if the user has not started watching this movie.
+     * </p>
+     *
+     * @param movieId   The ID of the movie.
+     * @param principal The authenticated user principal.
+     * @return The WatchProgress if found, or 404 if not.
+     */
+    @GetMapping("/progress/{movieId}")
+    public ResponseEntity<WatchProgress> getMovieProgress(
+            @PathVariable String movieId,
+            @AuthenticationPrincipal Object principal
+    ) {
+        String userId = getUserId(principal);
+        return ResponseEntity.of(userService.getWatchProgress(userId, movieId));
+    }
 }

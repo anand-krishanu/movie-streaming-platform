@@ -10,6 +10,47 @@ const MoviePlayerComponent = ({ movieId, poster }) => {
   const progressIntervalRef = useRef(null);
   const { dbUser } = useAuthStore();
 
+  // Fetch and restore playback progress
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (!movieId || !dbUser || dbUser._isFallback) {
+        console.log("Skipping progress fetch (missing ID or user)");
+        return;
+      }
+
+      try {
+        console.log(`[Player] Checking for saved progress...`);
+        const progress = await userApi.getMovieProgress(movieId);
+        
+        if (progress && progress.timestampSeconds > 5 && !progress.completed) {
+          console.log(`[Player] Found resumable progress: ${progress.timestampSeconds}s`);
+          const video = videoRef.current;
+          
+          if (video) {
+            const resume = () => {
+              console.log(`[Player] Setting currentTime to ${progress.timestampSeconds}`);
+              video.currentTime = progress.timestampSeconds;
+            };
+
+            // If metadata is loaded, seek immediately. Otherwise wait.
+            if (video.readyState >= 1) {
+              resume();
+            } else {
+              console.log(`[Player] Video not ready (readyState=${video.readyState}), waiting for metadata...`);
+              video.addEventListener('loadedmetadata', resume, { once: true });
+            }
+          }
+        } else {
+          console.log(`[Player] No resumable progress (New watch or completed)`);
+        }
+      } catch (error) {
+        console.error("[Player] Failed to restore progress", error);
+      }
+    };
+
+    fetchProgress();
+  }, [movieId, dbUser]);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !movieId) return;
