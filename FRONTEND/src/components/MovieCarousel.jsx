@@ -93,7 +93,7 @@ const MovieCarousel = () => {
           msOverflowStyle: 'none'
         }}
       >
-        {featuredMovies.map((movie, index) => {
+        {featuredMovies.map((movie) => {
           const movieId = movie.movieId || movie._id || movie.id;
           const title = movie.movieTitle || movie.title || 'Unknown Title';
           

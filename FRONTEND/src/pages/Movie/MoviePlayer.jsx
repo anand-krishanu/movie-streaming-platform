@@ -265,11 +265,19 @@ export default function MoviePlayer() {
                 </div>
               )}
 
-              {/* Release Date */}
-              {movie.releaseDate && (
+              {/* Release Year */}
+              {(movie.releaseYear || movie.releaseDate) && (
                 <div className="flex items-center gap-2">
                   <span className="text-gray-400">•</span>
-                  <span>{new Date(movie.releaseDate).getFullYear()}</span>
+                  <span>{movie.releaseYear || new Date(movie.releaseDate).getFullYear()}</span>
+                </div>
+              )}
+
+              {/* Duration */}
+              {movie.videoDetails?.durationSeconds && (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400">•</span>
+                  <span>{Math.floor(movie.videoDetails.durationSeconds / 60)}m</span>
                 </div>
               )}
             </div>
