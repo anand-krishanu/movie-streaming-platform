@@ -46,6 +46,16 @@ class RecommenderSystem:
         interactions_df = self.data_loader.get_interaction_matrix()
         self.movies_metadata = self.data_loader.get_movies_metadata()
         
+        # FILTER: Keep only interactions for movies that actually exist in metadata
+        # This prevents errors if a user has watched a movie that was later deleted
+        if not self.movies_metadata.empty and 'movie_id' in self.movies_metadata.columns:
+            valid_movie_ids = set(self.movies_metadata['movie_id'].unique())
+            initial_count = len(interactions_df)
+            interactions_df = interactions_df[interactions_df['movie_id'].isin(valid_movie_ids)]
+            dropped_count = initial_count - len(interactions_df)
+            if dropped_count > 0:
+                logger.warning(f"⚠️ Dropped {dropped_count} interactions for missing movies")
+        
         if len(interactions_df) < 10:
             logger.warning("⚠️ Very few interactions. Model may not be accurate.")
         
@@ -133,17 +143,31 @@ class RecommenderSystem:
         from sklearn.feature_extraction.text import CountVectorizer
         
         # Filter metadata for movies in our training set
+        target_ids = list(self.movie_id_map.keys())
         metadata = self.movies_metadata[
-            self.movies_metadata['movie_id'].isin(self.movie_id_map.keys())
+            self.movies_metadata['movie_id'].isin(target_ids)
         ].copy()
+        
+        # Debug logging
+        logger.info(f"Building content similarity for {len(target_ids)} movies")
+        logger.info(f"Found {len(metadata)} matching movies in metadata")
+        
+        # Remove duplicates if any
+        metadata = metadata.drop_duplicates(subset='movie_id')
         
         # Order by movie_id_map
         metadata = metadata.set_index('movie_id')
-        metadata = metadata.loc[[self.reverse_movie_map[i] for i in range(len(self.movie_id_map))]]
+        
+        # Use reindex to ensure exact order and handle missing
+        ordered_ids = [self.reverse_movie_map[i] for i in range(len(self.movie_id_map))]
+        metadata = metadata.reindex(ordered_ids)
+        
+        # Fill missing genres
+        metadata['genres'] = metadata['genres'].fillna('')
         
         # Vectorize genres
         vectorizer = CountVectorizer(token_pattern=r'[^|]+')
-        genre_matrix = vectorizer.fit_transform(metadata['genres'].fillna(''))
+        genre_matrix = vectorizer.fit_transform(metadata['genres'])
         
         # Calculate cosine similarity
         similarity = cosine_similarity(genre_matrix)

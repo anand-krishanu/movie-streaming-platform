@@ -92,7 +92,7 @@ class DataLoader:
         
         # Add viewing history from watch progress
         try:
-            watch_progress = list(self.db.watchProgress.find())
+            watch_progress = list(self.db.watch_progress.find())
             for progress in watch_progress:
                 user_id = progress.get('userId')
                 movie_id = progress.get('movieId')
@@ -162,6 +162,16 @@ class DataLoader:
                 if not movie_id:
                     continue
                     
+                # Handle release year logic
+                release_year = movie.get('releaseYear')
+                if not release_year and movie.get('releaseDate'):
+                    try:
+                        # If it's a datetime object
+                        if hasattr(movie.get('releaseDate'), 'year'):
+                            release_year = movie.get('releaseDate').year
+                    except:
+                        pass
+
                 movies_data.append({
                     'movie_id': movie_id,
                     'title': movie.get('movieTitle', 'Unknown'),
@@ -169,7 +179,7 @@ class DataLoader:
                     'rating': float(movie.get('imdbRating', 0)),
                     'views': int(movie.get('statistics', {}).get('views', 0)),
                     'likes': int(movie.get('statistics', {}).get('likes', 0)),
-                    'release_year': movie.get('releaseDate', datetime.now()).year if movie.get('releaseDate') else None
+                    'release_year': release_year
                 })
             except Exception as e:
                 logger.warning(f"⚠️ Skipping movie due to error: {e}")
@@ -206,7 +216,7 @@ class DataLoader:
     
     def _get_watched_movies(self, user_id: str) -> List[str]:
         """Get list of movies user has watched"""
-        progress = list(self.db.watchProgress.find({'userId': user_id}))
+        progress = list(self.db.watch_progress.find({'userId': user_id}))
         return [p['movieId'] for p in progress if p.get('progress', 0) > 0.1]
     
     def record_interaction(self, user_id: str, movie_id: str, score: float):

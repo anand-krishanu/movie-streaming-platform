@@ -71,6 +71,9 @@ async def train_model():
             message="Model trained successfully",
             metrics=metrics
         )
+    except ValueError as e:
+        logger.warning(f"⚠️ Training skipped: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"❌ Training failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
