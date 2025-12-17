@@ -12,6 +12,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST Controller for managing user-specific interactions.
+ * <p>
+ * This controller handles operations related to user preferences and activity, such as:
+ * <ul>
+ *   <li>Toggling favorite movies</li>
+ *   <li>Managing the "Watch Later" list</li>
+ *   <li>Tracking video playback progress (heartbeat)</li>
+ *   <li>Retrieving "Continue Watching" history</li>
+ * </ul>
+ * </p>
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/user")
@@ -44,9 +56,13 @@ public class UserController {
                 });
     }
 
-    // ----------------------------------------------------
-    // 1. TOGGLE FAVORITE
-    // ----------------------------------------------------
+    /**
+     * Toggles a movie in the user's favorites list.
+     *
+     * @param movieId   The ID of the movie to toggle.
+     * @param principal The authenticated user principal.
+     * @return A success message.
+     */
     @PostMapping("/favorite/{movieId}")
     public ResponseEntity<String> toggleFavorite(
             @PathVariable String movieId,
@@ -66,9 +82,13 @@ public class UserController {
         }
     }
 
-    // ----------------------------------------------------
-    // 2. TOGGLE WATCH LATER
-    // ----------------------------------------------------
+    /**
+     * Toggles a movie in the user's "Watch Later" list.
+     *
+     * @param movieId   The ID of the movie to toggle.
+     * @param principal The authenticated user principal.
+     * @return A success message.
+     */
     @PostMapping("/watch-later/{movieId}")
     public ResponseEntity<String> toggleWatchLater(
             @PathVariable String movieId,
@@ -79,9 +99,17 @@ public class UserController {
         return ResponseEntity.ok("Watch Later toggled");
     }
 
-    // ----------------------------------------------------
-    // 3. HEARTBEAT (Update Watch Progress)
-    // ----------------------------------------------------
+    /**
+     * Updates the watch progress for a specific movie.
+     * <p>
+     * This endpoint acts as a heartbeat, receiving periodic updates from the video player
+     * to track how much of the movie the user has watched.
+     * </p>
+     *
+     * @param payload   A map containing 'movieId', 'seconds' (current timestamp), and 'duration' (total length).
+     * @param principal The authenticated user principal.
+     * @return A success message.
+     */
     @PostMapping("/progress")
     public ResponseEntity<String> updateProgress(
             @RequestBody Map<String, Object> payload,
@@ -98,9 +126,12 @@ public class UserController {
         return ResponseEntity.ok("Progress updated");
     }
 
-    // ----------------------------------------------------
-    // 4. GET CONTINUE WATCHING ROW
-    // ----------------------------------------------------
+    /**
+     * Retrieves the user's "Continue Watching" list.
+     *
+     * @param principal The authenticated user principal.
+     * @return A list of WatchProgress entries, sorted by most recently watched.
+     */
     @GetMapping("/continue-watching")
     public ResponseEntity<List<WatchProgress>> getContinueWatching(
             @AuthenticationPrincipal Object principal

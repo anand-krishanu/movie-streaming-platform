@@ -7,6 +7,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Entity representing a Movie in the system.
+ * <p>
+ * This document is stored in the "movies" collection in MongoDB. It contains all metadata
+ * related to a movie, including descriptive information, video processing details, and
+ * aggregated statistics (views, likes).
+ * </p>
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,6 +42,9 @@ public class Movie {
     @Builder.Default
     private Instant createdAt = Instant.now();
 
+    /**
+     * Inner class containing technical details about the processed video files.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -50,6 +61,9 @@ public class Movie {
         private boolean processingCompleted;
     }
 
+    /**
+     * Inner class containing aggregated statistics for the movie.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

@@ -16,6 +16,17 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service class for managing User entities and their interactions.
+ * <p>
+ * This service handles business logic for:
+ * <ul>
+ *   <li>User synchronization with Firebase Authentication</li>
+ *   <li>Managing user favorites and "Watch Later" lists</li>
+ *   <li>Tracking and updating movie watch progress</li>
+ * </ul>
+ * </p>
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,8 +36,16 @@ public class UserService {
     private final WatchProgressRepository watchProgressRepository;
     private final MovieRepository movieRepository;
 
-    // --- FIREBASE SYNC (Replaces OAuth2 Logic) ---
-    // This ensures the Firebase User exists in MongoDB
+    /**
+     * Synchronizes a Firebase user with the local MongoDB database.
+     * <p>
+     * If the user does not exist in the local database, a new record is created
+     * using details from the Firebase token. If the user exists, the existing record is returned.
+     * </p>
+     *
+     * @param token The Firebase authentication token containing user details.
+     * @return The synchronized User entity.
+     */
     public User syncUser(FirebaseToken token) {
 
         return userRepository.findById(token.getUid())
@@ -42,7 +61,20 @@ public class UserService {
     }
 
 
-    // --- 1. FAVORITES/LIKES LOGIC (MERGED) ---
+    /**
+     * Toggles the favorite status of a movie for a specific user.
+     * <p>
+     * This method handles the bidirectional relationship:
+     * <ul>
+     *   <li>Adding/Removing the movie ID from the user's favorites list.</li>
+     *   <li>Incrementing/Decrementing the movie's global like count.</li>
+     *   <li>Updating the list of users who liked the movie.</li>
+     * </ul>
+     * </p>
+     *
+     * @param userId  The ID of the user.
+     * @param movieId The ID of the movie.
+     */
     @Transactional
     public void toggleFavorite(String userId, String movieId) {
         log.info("========================================");
@@ -115,7 +147,12 @@ public class UserService {
             savedUser.getFavoriteMovieIds().size(), savedMovie.getStatistics().getLikes());
     }
 
-    // --- 2. WATCH LATER LOGIC ---
+    /**
+     * Toggles the "Watch Later" status of a movie for a specific user.
+     *
+     * @param userId  The ID of the user.
+     * @param movieId The ID of the movie.
+     */
     @Transactional
     public void toggleWatchLater(String userId, String movieId) {
         User user = userRepository.findById(userId)
@@ -129,7 +166,18 @@ public class UserService {
         userRepository.save(user);
     }
 
-    // --- 3. WATCH PROGRESS (HEARTBEAT) ---
+    /**
+     * Updates the watch progress for a user on a specific movie.
+     * <p>
+     * This method records the current timestamp and calculates if the movie
+     * should be marked as "completed" (e.g., if > 90% watched).
+     * </p>
+     *
+     * @param userId        The ID of the user.
+     * @param movieId       The ID of the movie.
+     * @param seconds       The current playback position in seconds.
+     * @param totalDuration The total duration of the movie in seconds.
+     */
     public void updateWatchProgress(String userId, String movieId, Double seconds, Double totalDuration) {
         WatchProgress progress = watchProgressRepository.findByUserIdAndMovieId(userId, movieId)
                 .orElse(WatchProgress.builder()
@@ -150,6 +198,12 @@ public class UserService {
         watchProgressRepository.save(progress);
     }
 
+    /**
+     * Retrieves the watch history for a user.
+     *
+     * @param userId The ID of the user.
+     * @return A list of WatchProgress records, sorted by last watched time.
+     */
     public List<WatchProgress> getContinueWatching(String userId) {
         return watchProgressRepository.findByUserIdOrderByLastWatchedAtDesc(userId);
     }

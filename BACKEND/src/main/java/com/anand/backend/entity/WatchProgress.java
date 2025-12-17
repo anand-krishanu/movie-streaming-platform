@@ -10,12 +10,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
+/**
+ * Entity tracking a user's playback progress for a specific movie.
+ * <p>
+ * This document is used to implement "Continue Watching" functionality.
+ * It stores the last watched timestamp and completion status.
+ * A compound index on (userId, movieId) ensures efficient lookups and uniqueness.
+ * </p>
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "watch_progress")
-// This Index makes finding "User X's progress on Movie Y" instant
 @CompoundIndex(name = "user_movie_idx", def = "{'userId': 1, 'movieId': 1}", unique = true)
 public class WatchProgress {
 

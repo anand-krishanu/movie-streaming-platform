@@ -10,6 +10,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entity representing a Watch Party session.
+ * <p>
+ * This document stores the state of a collaborative viewing session, including the
+ * movie being watched, the host, the list of participants, and the current playback state.
+ * </p>
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

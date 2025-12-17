@@ -8,6 +8,13 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+/**
+ * Service class for managing Watch Party logic and state.
+ * <p>
+ * This service handles the creation, management, and cleanup of watch party rooms.
+ * It maintains the state of participants and playback synchronization.
+ * </p>
+ */
 @Service
 @RequiredArgsConstructor
 public class WatchPartyService {
@@ -15,7 +22,11 @@ public class WatchPartyService {
     private final WatchPartyRepository watchPartyRepository;
     
     /**
-     * Create a new watch party room
+     * Creates a new watch party room.
+     *
+     * @param movieId    The ID of the movie to be watched.
+     * @param hostUserId The ID of the user creating the room (host).
+     * @return The newly created WatchParty entity.
      */
     public WatchParty createRoom(String movieId, String hostUserId) {
         WatchParty watchParty = new WatchParty();
@@ -31,7 +42,11 @@ public class WatchPartyService {
     }
     
     /**
-     * Join an existing watch party room
+     * Adds a participant to an existing watch party.
+     *
+     * @param roomId The ID of the room.
+     * @param userId The ID of the user joining.
+     * @return The updated WatchParty entity.
      */
     public WatchParty joinRoom(String roomId, String userId) {
         WatchParty watchParty = watchPartyRepository.findById(roomId)
@@ -44,7 +59,14 @@ public class WatchPartyService {
     }
     
     /**
-     * Leave a watch party room
+     * Removes a participant from a watch party.
+     * <p>
+     * If the host leaves, or if the room becomes empty, the watch party is deleted.
+     * </p>
+     *
+     * @param roomId The ID of the room.
+     * @param userId The ID of the user leaving.
+     * @return The updated WatchParty entity, or null if the room was deleted.
      */
     public WatchParty leaveRoom(String roomId, String userId) {
         WatchParty watchParty = watchPartyRepository.findById(roomId)
@@ -69,7 +91,12 @@ public class WatchPartyService {
     }
     
     /**
-     * Update playback state (time, play/pause)
+     * Updates the playback state of the watch party.
+     *
+     * @param roomId      The ID of the room.
+     * @param currentTime The current playback timestamp.
+     * @param isPlaying   The playback status (true for playing, false for paused).
+     * @return The updated WatchParty entity.
      */
     public WatchParty updatePlaybackState(String roomId, Double currentTime, Boolean isPlaying) {
         WatchParty watchParty = watchPartyRepository.findById(roomId)
@@ -87,14 +114,21 @@ public class WatchPartyService {
     }
     
     /**
-     * Get current room state
+     * Retrieves the current state of a watch party.
+     *
+     * @param roomId The ID of the room.
+     * @return An Optional containing the WatchParty if found.
      */
     public Optional<WatchParty> getRoomState(String roomId) {
         return watchPartyRepository.findById(roomId);
     }
     
     /**
-     * Check if user is the host
+     * Checks if a specific user is the host of the watch party.
+     *
+     * @param roomId The ID of the room.
+     * @param userId The ID of the user to check.
+     * @return true if the user is the host, false otherwise.
      */
     public boolean isHost(String roomId, String userId) {
         return watchPartyRepository.findById(roomId)

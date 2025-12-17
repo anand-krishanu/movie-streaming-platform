@@ -12,6 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST Controller for handling user authentication and synchronization.
+ * <p>
+ * This controller manages the synchronization of user data between the Firebase Authentication
+ * service and the local MongoDB database. It also provides endpoints for retrieving user details.
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -21,7 +28,16 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserService userService;
 
-    // --- 1. SYNC ENDPOINT (Called by React 'upsertUser') ---
+    /**
+     * Synchronizes the authenticated user's data with the database.
+     * <p>
+     * This endpoint is typically called by the frontend immediately after a successful Firebase login.
+     * It ensures that the user record in MongoDB is up-to-date with the information from the Firebase token.
+     * </p>
+     *
+     * @param principal The authenticated user principal (FirebaseToken).
+     * @return A ResponseEntity containing the synced User object and status message.
+     */
     @PostMapping("/sync")
     public ResponseEntity<Map<String, Object>> syncUser(@AuthenticationPrincipal Object principal) {
         // The Filter sets the principal as a FirebaseToken object
@@ -36,7 +52,12 @@ public class AuthController {
         ));
     }
 
-    // --- 2. GET CURRENT USER ---
+    /**
+     * Retrieves the currently authenticated user's profile.
+     *
+     * @param principal The authenticated user principal.
+     * @return The User entity if found, or 404 Not Found.
+     */
     @GetMapping("/user")
     public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal Object principal) {
         FirebaseToken token = (FirebaseToken) principal;
@@ -47,6 +68,12 @@ public class AuthController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Retrieves all users (Admin only).
+     *
+     * @param principal The authenticated user principal.
+     * @return A list of all users if the requester is an Admin, otherwise 403 Forbidden.
+     */
     @GetMapping
     public ResponseEntity<?> getAllUsers(@AuthenticationPrincipal Object principal) {
         FirebaseToken token = (FirebaseToken) principal;
@@ -58,6 +85,16 @@ public class AuthController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    /**
+     * Retrieves a specific user by ID.
+     * <p>
+     * Access is restricted to Administrators or the user themselves.
+     * </p>
+     *
+     * @param id        The ID of the user to retrieve.
+     * @param principal The authenticated user principal.
+     * @return The User entity if authorized and found, otherwise 403 Forbidden or 404 Not Found.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable String id, @AuthenticationPrincipal Object principal) {
         FirebaseToken token = (FirebaseToken) principal;

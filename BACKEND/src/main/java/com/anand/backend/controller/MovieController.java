@@ -20,6 +20,19 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.util.List;
 
+/**
+ * REST Controller for managing movie resources.
+ * <p>
+ * This controller provides endpoints for:
+ * <ul>
+ *   <li>Uploading new movies with metadata</li>
+ *   <li>Retrieving movie details and lists (paginated)</li>
+ *   <li>Streaming video content via HLS (HTTP Live Streaming)</li>
+ *   <li>Managing user interactions (likes, views)</li>
+ *   <li>Deleting movies (Admin only)</li>
+ * </ul>
+ * </p>
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/movies")
@@ -37,21 +50,39 @@ public class MovieController {
     @Value("${video.processed.dir:processed}")
     private String processedDir;
 
+    /**
+     * Simple health check endpoint.
+     * @return A greeting message.
+     */
     @GetMapping("/hello")
     public String hello() {
         return "Hello Worldies";
     }
 
-    // --------------------------------------------------------
-    // UPLOAD MOVIE
-    // --------------------------------------------------------
+    /**
+     * Uploads a new movie to the platform.
+     * <p>
+     * This endpoint accepts multipart form data containing the movie file and its metadata.
+     * Only users with the ADMIN role are authorized to perform this operation.
+     * </p>
+     *
+     * @param title       The title of the movie.
+     * @param description A brief description or synopsis.
+     * @param imdbRating  The IMDb rating of the movie.
+     * @param genres      A list of genres associated with the movie.
+     * @param poster      The URL of the movie poster image.
+     * @param releaseYear The year the movie was released.
+     * @param file        The video file to be uploaded.
+     * @param principal   The authenticated user principal (Firebase Token).
+     * @return ResponseEntity containing the saved Movie entity or an error status.
+     */
     @PostMapping("/upload")
     public ResponseEntity<?> uploadMovie(
             @RequestParam("title") String title,
             @RequestParam("description") String description,
-            @RequestParam("imdbRating") Double imdbRating, // Changed to Double
-            @RequestParam("genres") List<String> genres,   // Changed to List<String>
-            @RequestParam(value = "poster", required = false) String poster, // Movie poster URL
+            @RequestParam("imdbRating") Double imdbRating,
+            @RequestParam("genres") List<String> genres,
+            @RequestParam(value = "poster", required = false) String poster,
             @RequestParam(value = "releaseYear", required = false) Integer releaseYear,
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal Object principal
@@ -64,8 +95,7 @@ public class MovieController {
         }
 
         try {
-            // Note: 'length' and 'language' were removed to match the Service signature
-            // We calculate length automatically via FFmpeg in a real app
+            // Delegate to service for storage and processing
             Movie saved = movieService.uploadMovie(
                     title,
                     description,
@@ -83,9 +113,13 @@ public class MovieController {
         }
     }
 
-    // --------------------------------------------------------
-    // GET ALL MOVIES (PAGINATED)
-    // --------------------------------------------------------
+    /**
+     * Retrieves a paginated list of all movies.
+     *
+     * @param page The page number (zero-based).
+     * @param size The number of items per page.
+     * @return A Page object containing the list of movies.
+     */
     @GetMapping
     public Page<Movie> getAllMovies(
             @RequestParam(defaultValue = "0") int page,
@@ -94,18 +128,28 @@ public class MovieController {
         return movieService.getAllMovies(page, size);
     }
 
-    // --------------------------------------------------------
-    // GET MOVIE BY ID
-    // --------------------------------------------------------
+    /**
+     * Retrieves a specific movie by its ID.
+     *
+     * @param id The unique identifier of the movie.
+     * @return ResponseEntity containing the Movie entity if found, or 404 Not Found.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Movie> getMovieById(@PathVariable String id) {
         Movie movie = movieService.getMovieById(id);
         return movie != null ? ResponseEntity.ok(movie) : ResponseEntity.notFound().build();
     }
 
-    // --------------------------------------------------------
-    // DELETE MOVIE
-    // --------------------------------------------------------
+    /**
+     * Deletes a movie and its associated resources.
+     * <p>
+     * Only users with the ADMIN role are authorized to perform this operation.
+     * </p>
+     *
+     * @param id        The unique identifier of the movie to delete.
+     * @param principal The authenticated user principal.
+     * @return ResponseEntity with 204 No Content on success, or error status.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMovie(@PathVariable String id, @AuthenticationPrincipal Object principal) {
         com.google.firebase.auth.FirebaseToken token = (com.google.firebase.auth.FirebaseToken) principal;
@@ -119,28 +163,42 @@ public class MovieController {
         return ResponseEntity.noContent().build();
     }
 
-    // --------------------------------------------------------
-    // INCREMENT VIEW COUNT
-    // --------------------------------------------------------
+    /**
+     * Increments the view count for a specific movie.
+     *
+     * @param id The unique identifier of the movie.
+     * @return ResponseEntity with a success message.
+     */
     @PostMapping("/{id}/view")
     public ResponseEntity<String> incrementView(@PathVariable String id) {
         movieService.incrementView(id);
         return ResponseEntity.ok("View count incremented");
     }
 
-    // --------------------------------------------------------
-    // TOGGLE LIKE
-    // --------------------------------------------------------
+    /**
+     * Toggles the like status for a specific movie.
+     *
+     * @param id The unique identifier of the movie.
+     * @return ResponseEntity with a success message.
+     */
     @PostMapping("/{id}/like")
     public ResponseEntity<String> toggleLike(@PathVariable String id) {
         movieService.toggleLike(id);
         return ResponseEntity.ok("Like toggled");
     }
 
-    // --------------------------------------------------------
-    // HLS STREAMING ENDPOINT
-    // Serves .m3u8, .ts segments, and images
-    // --------------------------------------------------------
+    /**
+     * Serves HLS (HTTP Live Streaming) content.
+     * <p>
+     * This endpoint handles requests for the master playlist (.m3u8), media segments (.ts),
+     * and associated assets (thumbnails, previews). It maps the requested URL path to the
+     * local file system where processed video files are stored.
+     * </p>
+     *
+     * @param movieId The ID of the movie being streamed.
+     * @param request The HttpServletRequest to extract the relative path.
+     * @return ResponseEntity containing the requested resource or 404 Not Found.
+     */
     @GetMapping("/stream/{movieId}/**")
     public ResponseEntity<Resource> streamHLS(
             @PathVariable String movieId,
@@ -167,14 +225,13 @@ public class MovieController {
             File file = new File(processedDir + "/" + movieId + "/" + relativePath);
 
             if (!file.exists()) {
-                // log.warn("File not found: {}", file.getAbsolutePath()); // Optional logging
                 return ResponseEntity.notFound().build();
             }
 
             FileSystemResource resource = new FileSystemResource(file);
             HttpHeaders headers = new HttpHeaders();
 
-            // Set correct Content-Type
+            // Set correct Content-Type based on file extension
             if (relativePath.endsWith(".m3u8")) {
                 headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.apple.mpegurl");
             } else if (relativePath.endsWith(".ts")) {
@@ -189,8 +246,7 @@ public class MovieController {
                 headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
             }
 
-            // CORS is already configured globally in WebConfig, no need to add headers here
-            // Just add expose headers for HLS functionality
+            // Add CORS headers specifically for HLS to allow the player to read content length
             headers.add("Access-Control-Expose-Headers", "Content-Length");
 
             return ResponseEntity.ok()

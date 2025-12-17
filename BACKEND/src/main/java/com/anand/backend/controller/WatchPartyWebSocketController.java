@@ -12,6 +12,17 @@ import org.springframework.stereotype.Controller;
 
 import java.util.Optional;
 
+/**
+ * WebSocket Controller for real-time Watch Party synchronization.
+ * <p>
+ * This controller handles STOMP messages for:
+ * <ul>
+ *   <li>Synchronizing playback state (play, pause, seek) across all participants.</li>
+ *   <li>Broadcasting participant join/leave events.</li>
+ *   <li>Sending real-time errors or status updates.</li>
+ * </ul>
+ * </p>
+ */
 @Controller
 @RequiredArgsConstructor
 public class WatchPartyWebSocketController {
@@ -20,8 +31,14 @@ public class WatchPartyWebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     
     /**
-     * Handle playback synchronization events (play, pause, seek)
-     * Messages sent to: /app/watch-party/{roomId}/sync
+     * Handles playback synchronization events.
+     * <p>
+     * Receives updates from the host or authorized participants regarding the video state
+     * and broadcasts them to all subscribers of the room's topic.
+     * </p>
+     *
+     * @param roomId  The ID of the watch party room.
+     * @param message The synchronization message containing time and playback status.
      */
     @MessageMapping("/watch-party/{roomId}/sync")
     public void handleSync(@DestinationVariable String roomId, @Payload SyncMessage message) {
@@ -40,8 +57,14 @@ public class WatchPartyWebSocketController {
     }
     
     /**
-     * Handle user joining the watch party
-     * Messages sent to: /app/watch-party/{roomId}/join
+     * Handles a user joining the WebSocket session for a watch party.
+     * <p>
+     * Updates the room state and notifies existing participants of the new member.
+     * Also sends the current room state (sync) to the newly joined user.
+     * </p>
+     *
+     * @param roomId  The ID of the watch party room.
+     * @param message The join message containing user details.
      */
     @MessageMapping("/watch-party/{roomId}/join")
     public void handleJoin(@DestinationVariable String roomId, @Payload JoinMessage message) {
@@ -84,8 +107,10 @@ public class WatchPartyWebSocketController {
     }
     
     /**
-     * Handle user leaving the watch party
-     * Messages sent to: /app/watch-party/{roomId}/leave
+     * Handles a user leaving the WebSocket session.
+     *
+     * @param roomId  The ID of the watch party room.
+     * @param message The leave message containing the user ID.
      */
     @MessageMapping("/watch-party/{roomId}/leave")
     public void handleLeave(@DestinationVariable String roomId, @Payload LeaveMessage message) {

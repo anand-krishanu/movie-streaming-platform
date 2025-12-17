@@ -14,6 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for interacting with the Machine Learning (ML) microservice.
+ * <p>
+ * This service acts as a client to the external Python-based ML service. It handles:
+ * <ul>
+ *   <li>Fetching personalized movie recommendations for users.</li>
+ *   <li>Retrieving similar movies based on content or collaborative filtering.</li>
+ *   <li>Triggering model retraining tasks.</li>
+ *   <li>Providing fallback recommendations (e.g., popular movies) when the ML service is unavailable.</li>
+ * </ul>
+ * </p>
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,7 +38,15 @@ public class MLRecommendationService {
     private String mlServiceUrl;
 
     /**
-     * Get personalized movie recommendations for a user
+     * Retrieves personalized movie recommendations for a specific user.
+     * <p>
+     * If the ML service is unavailable or returns no results, this method falls back
+     * to returning the most popular movies to ensure a consistent user experience.
+     * </p>
+     *
+     * @param userId The unique identifier of the user.
+     * @param limit  The maximum number of recommendations to return.
+     * @return A list of recommended Movie entities.
      */
     public List<Movie> getRecommendationsForUser(String userId, int limit) {
         try {
@@ -67,7 +87,11 @@ public class MLRecommendationService {
     }
 
     /**
-     * Get movies similar to a given movie
+     * Retrieves a list of movies similar to the specified movie.
+     *
+     * @param movieId The unique identifier of the source movie.
+     * @param limit   The maximum number of similar movies to return.
+     * @return A list of similar Movie entities.
      */
     public List<Movie> getSimilarMovies(String movieId, int limit) {
         try {
@@ -100,7 +124,13 @@ public class MLRecommendationService {
     }
 
     /**
-     * Trigger model retraining
+     * Triggers the training process for the ML model.
+     * <p>
+     * This is typically called after significant data changes (e.g., new user interactions)
+     * to ensure the recommendations remain up-to-date.
+     * </p>
+     *
+     * @return A status message indicating the result of the training initiation.
      */
     public String trainModel() {
         try {
@@ -125,7 +155,9 @@ public class MLRecommendationService {
     }
 
     /**
-     * Check if ML service is healthy
+     * Checks the health status of the ML service.
+     *
+     * @return true if the service is healthy and reachable, false otherwise.
      */
     public boolean isMLServiceHealthy() {
         try {
@@ -140,7 +172,14 @@ public class MLRecommendationService {
     }
 
     /**
-     * Fallback: Return popular movies when ML service is unavailable
+     * Generates fallback recommendations based on movie popularity.
+     * <p>
+     * This method is used when the ML service is unavailable or cannot provide recommendations.
+     * It sorts movies by a calculated popularity score (views + likes * 2).
+     * </p>
+     *
+     * @param limit The maximum number of movies to return.
+     * @return A list of popular Movie entities.
      */
     private List<Movie> getFallbackRecommendations(int limit) {
         log.info("Using fallback recommendations (popular movies)");

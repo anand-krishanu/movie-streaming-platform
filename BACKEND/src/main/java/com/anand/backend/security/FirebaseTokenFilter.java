@@ -17,11 +17,28 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Custom Security Filter for Firebase Authentication.
+ * <p>
+ * This filter intercepts every HTTP request to check for a valid "Authorization" header containing a Bearer token.
+ * It verifies the token using the Firebase Admin SDK. If the token is valid, it authenticates the user
+ * in the Spring Security context, allowing the request to proceed to protected resources.
+ * </p>
+ */
 @Component
 public class FirebaseTokenFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(FirebaseTokenFilter.class);
 
+    /**
+     * Filters incoming requests to validate Firebase ID tokens.
+     *
+     * @param request     The HTTP request.
+     * @param response    The HTTP response.
+     * @param filterChain The filter chain.
+     * @throws ServletException If a servlet error occurs.
+     * @throws IOException      If an I/O error occurs.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -31,10 +48,10 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
-                // 1. Verify Token with Firebase
+                // Verify the ID token with Firebase
                 FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
 
-                // 2. If valid, tell Spring "User is Logged In"
+                // Create an Authentication object and set it in the SecurityContext
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         decodedToken, null, new ArrayList<>());
 

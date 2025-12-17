@@ -11,11 +11,32 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Service responsible for handling video processing tasks using FFmpeg.
+ * <p>
+ * This service orchestrates the entire video processing pipeline, which includes:
+ * <ul>
+ *   <li>Transcoding raw video into multi-bitrate HLS (HTTP Live Streaming) format.</li>
+ *   <li>Generating static thumbnails for video representation.</li>
+ *   <li>Creating animated GIF previews for UI hover effects.</li>
+ *   <li>Extracting timeline thumbnails for seeking previews.</li>
+ *   <li>Calculating video duration.</li>
+ * </ul>
+ * All operations are executed asynchronously to prevent blocking the main application thread.
+ * </p>
+ */
 @Slf4j
 @Service
 public class VideoProcessingService {
 
-    // Use CompletableFuture to return result to the caller (MovieService)
+    /**
+     * Executes the full video processing pipeline asynchronously.
+     *
+     * @param movieId       The unique identifier of the movie.
+     * @param inputFilePath The absolute path to the raw input video file.
+     * @param outputDirBase The directory where processed files will be stored.
+     * @return A CompletableFuture containing the {@link VideoProcessingResult} upon success, or an exception on failure.
+     */
     @Async
     public CompletableFuture<VideoProcessingResult> processFullPipeline(
             String movieId,
@@ -63,7 +84,15 @@ public class VideoProcessingService {
         }
     }
 
-    // --- TASK 1: HLS CONVERSION ---
+    /**
+     * Converts the input video to HLS format with multiple bitrates (1080p, 720p, 480p).
+     *
+     * @param input     The input video file.
+     * @param outputDir The directory to save the HLS segments and playlists.
+     * @return The filename of the master playlist.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the process is interrupted.
+     */
     private String convertToMultiBitrateHLS(File input, File outputDir) throws IOException, InterruptedException {
         String segmentFilename = outputDir.getAbsolutePath() + "/segment_%v_%03d.ts";
         String masterPlaylist = outputDir.getAbsolutePath() + "/master.m3u8";
@@ -106,7 +135,15 @@ public class VideoProcessingService {
         return "master.m3u8"; // Return filename only (relative)
     }
 
-    // --- TASK 2: THUMBNAIL ---
+    /**
+     * Generates a static thumbnail image from the video.
+     *
+     * @param input     The input video file.
+     * @param outputDir The directory to save the thumbnail.
+     * @return The filename of the generated thumbnail.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the process is interrupted.
+     */
     private String generateThumbnail(File input, File outputDir) throws IOException, InterruptedException {
         String filename = "thumbnail.jpg";
         File target = new File(outputDir, filename);
@@ -124,7 +161,15 @@ public class VideoProcessingService {
         return filename;
     }
 
-    // --- TASK 3: 5-SEC PREVIEW (GIF/WebP) ---
+    /**
+     * Generates a short animated GIF preview from the video.
+     *
+     * @param input     The input video file.
+     * @param outputDir The directory to save the GIF.
+     * @return The filename of the generated GIF.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the process is interrupted.
+     */
     private String generatePreviewGif(File input, File outputDir) throws IOException, InterruptedException {
         String filename = "preview.gif"; // WebP is better, but GIF is universally supported
         File target = new File(outputDir, filename);
@@ -143,11 +188,20 @@ public class VideoProcessingService {
         return filename;
     }
 
-    // --- TASK 4: TIMELINE THUMBNAILS ---
+    /**
+     * Generates a series of thumbnails for the video timeline (e.g., for seeking).
+     *
+     * @param input     The input video file.
+     * @param outputDir The directory to save the thumbnails.
+     * @return The filename pattern for the generated thumbnails.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the process is interrupted.
+     */
     private String generateTimelineThumbnails(File input, File outputDir) throws IOException, InterruptedException {
         // Pattern for filenames: thumb_0001.jpg, thumb_0002.jpg, etc.
         String filenamePattern = "thumb_%04d.jpg";
         String outputPath = outputDir.getAbsolutePath() + File.separator + filenamePattern;
+
 
         ProcessBuilder pb = new ProcessBuilder(
                 "ffmpeg", "-y",

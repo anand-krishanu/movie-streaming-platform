@@ -11,6 +11,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entity representing a User in the system.
+ * <p>
+ * This document is stored in the "users" collection. It maps the Firebase User ID to
+ * local application data, including roles, profile information, and lightweight lists
+ * for user preferences (favorites, watch later).
+ * </p>
+ */
 @Document(collection = "users")
 @Data
 @NoArgsConstructor
@@ -26,12 +34,19 @@ public class User {
     @Builder.Default
     private UserRole role = UserRole.USER;
 
-    // --- LIGHTWEIGHT LISTS (Embedded) ---
-    // We store only Movie IDs here. The frontend fetches details later.
-
+    /**
+     * List of Movie IDs marked as "Watch Later" by the user.
+     * <p>
+     * This is an embedded list for performance reasons. Detailed movie information
+     * is fetched separately when needed.
+     * </p>
+     */
     @Builder.Default
     private List<String> watchLaterMovieIds = new ArrayList<>();
 
+    /**
+     * List of Movie IDs marked as "Favorite" by the user.
+     */
     @Builder.Default
     private List<String> favoriteMovieIds = new ArrayList<>();
 
