@@ -2,21 +2,21 @@
 
 A full-stack Netflix-style movie streaming platform with AI-powered recommendations and real-time watch parties.
 
-##  Features
+## Features
 
-- ** Adaptive Video Streaming**: HLS (HTTP Live Streaming) with multiple quality levels (360p-1080p)
-- ** Custom Video Player**: Sleek custom UI with volume/playback controls and keyboard shortcuts
-- ** Smart Timeline**: Netflix-style thumbnail previews when hovering over the progress bar
-- ** AI Recommendations**: Hybrid ML model using Collaborative Filtering, Content-Based, and Popularity algorithms
-- ** Watch Parties**: Real-time synchronized viewing with WebSocket technology
-- ** Secure Authentication**: Firebase Google OAuth integration
-- ** Admin Dashboard**: Upload movies, manage content, train ML models
-- ** Progress Tracking**: Resume watching from where you left off
-- ** User Collections**: Favorites, Watch Later, and Watch History
-- ** Search & Discovery**: Genre filtering, search, and pagination
-- ** Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Adaptive Video Streaming**: HLS (HTTP Live Streaming) with multiple quality levels (360p-1080p)
+- **Custom Video Player**: Sleek custom UI with volume/playback controls and keyboard shortcuts
+- **Smart Timeline**: Netflix-style thumbnail previews when hovering over the progress bar
+- **AI Recommendations**: Hybrid ML model using Collaborative Filtering, Content-Based, and Popularity algorithms
+- **Watch Parties**: Real-time synchronized viewing with WebSocket technology
+- **Secure Authentication**: Firebase Google OAuth integration
+- **Admin Dashboard**: Upload movies, manage content, train ML models
+- **Progress Tracking**: Resume watching from where you left off
+- **User Collections**: Favorites, Watch Later, and Watch History
+- **Search & Discovery**: Genre filtering, search, and pagination
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
 
-##  Architecture
+## Architecture
 
 ```
 ┌─────────────┐      ┌──────────────┐      ┌────────────┐
@@ -33,7 +33,7 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
                      └──────────────┘
 ```
 
-##  Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework**: React 18 + Vite
@@ -64,7 +64,7 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
 - **Type**: MongoDB (NoSQL)
 - **Collections**: users, movies, watchProgress, watch_parties
 
-##  Prerequisites
+## Prerequisites
 
 Before running this project, ensure you have the following installed:
 
@@ -76,7 +76,7 @@ Before running this project, ensure you have the following installed:
 - **FFmpeg**: Latest version (for video processing)
 - **Firebase Account**: For authentication setup
 
-##  Installation & Setup
+## Installation & Setup
 
 ### 1. Clone the Repository
 
@@ -199,7 +199,7 @@ mongod --dbpath /path/to/your/data
 2. Get your connection string
 3. Update `MONGODB_URI` in environment variables
 
-##  Project Structure
+## Project Structure
 
 ```
 movie-streaming-platform/
@@ -231,7 +231,7 @@ movie-streaming-platform/
 └── README.md
 ```
 
-##  Usage Guide
+## Usage Guide
 
 ### For Users
 
@@ -254,7 +254,7 @@ movie-streaming-platform/
 3. **Train ML Model**: Click "Train Model" to update recommendations with latest user data
 4. **View Statistics**: Check user engagement metrics
 
-## 🔧 Configuration
+## Configuration
 
 ### Backend Configuration (`application.properties`)
 
@@ -272,7 +272,7 @@ spring.servlet.multipart.max-file-size=2GB
 - API Base URL: Set in `FRONTEND/src/api/axiosInstance.js` (default: `http://localhost:8080/api`)
 - WebSocket URL: Set in `FRONTEND/src/utils/websocket.js` (default: `http://localhost:8080/ws`)
 
-##  ML Model Details
+## ML Model Details
 
 ### Algorithm: Hybrid Recommendation System
 
@@ -303,7 +303,7 @@ spring.servlet.multipart.max-file-size=2GB
 - **Cold Start**: 100% coverage for new users
 - **Retraining**: One-click admin control
 
-##  API Endpoints
+## API Endpoints
 
 ### Movies API
 - `GET /api/movies` - Get all movies (paginated)
@@ -340,7 +340,7 @@ spring.servlet.multipart.max-file-size=2GB
 - `SUBSCRIBE /topic/watch-party/{roomId}` - Subscribe to room updates
 - `SEND /app/watch-party/{roomId}/sync` - Send sync event
 
-##  Security Features
+## Security Features
 
 - **Firebase JWT Authentication**: Secure token-based auth
 - **Spring Security**: Role-based access control (ADMIN/USER)
@@ -352,7 +352,7 @@ spring.servlet.multipart.max-file-size=2GB
 - **WebSocket Security**: Authenticated connections only
 - **Password-less Auth**: OAuth 2.0 via Google
 
-##  Troubleshooting
+## Troubleshooting
 
 ### Backend Issues
 
@@ -403,13 +403,13 @@ taskkill /F /PID <process-id>
 pip install -r requirements.txt
 ```
 
-##  Demo
+## Demo
 
 **Watch the demo video:** [Coming soon]
 
 **Try it live:** [Coming soon]
 
-##  Project Statistics
+## Project Statistics
 
 - **Lines of Code**: 15,000+
 - **Components**: 30+ React components
@@ -423,16 +423,16 @@ pip install -r requirements.txt
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-##  License
+## License
 
 This project is licensed under the MIT License.
 
-##  Author
+## Author
 
 **Krishanu Anand**
 - GitHub: [@anand-krishanu](https://github.com/anand-krishanu)
 
-##  Acknowledgments
+## Acknowledgments
 
 - React and Vite teams
 - Spring Boot community
@@ -440,7 +440,7 @@ This project is licensed under the MIT License.
 - Firebase team
 - FFmpeg project
 
-##  Contact
+## Contact
 
 For questions or support, please open an issue on GitHub.
 
