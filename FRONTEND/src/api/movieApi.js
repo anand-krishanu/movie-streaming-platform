@@ -47,10 +47,17 @@ const movieApi = {
     return res.data;
   },
 
-  // Get streaming URL
+  // Get streaming URL (OLD - unsecured, still works for backward compatibility)
   getStreamUrl: (movieId) => {
     const baseURL = axiosInstance.defaults.baseURL;
     return `${baseURL}/movies/stream/${movieId}/master.m3u8`;
+  },
+
+  // Get secure streaming URL with tokenized segments (NEW - recommended)
+  // Returns: { playlistUrl, videoId, expiresIn }
+  getSecureStreamUrl: async (movieId) => {
+    const res = await axiosInstance.get(`/videos/${movieId}/player`);
+    return res.data;
   },
 
   // Increment view count

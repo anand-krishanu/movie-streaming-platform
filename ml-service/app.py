@@ -43,9 +43,9 @@ async def startup_event():
     logger.info("🚀 Starting ML Recommendation Service")
     try:
         recommender.load_model()
-        logger.info("✅ Model loaded successfully")
+        logger.info("[SUCCESS] Model loaded successfully")
     except Exception as e:
-        logger.warning(f"⚠️ No existing model found: {e}")
+        logger.warning(f"[DEBUG] No existing model found: {e}")
 
 @app.get("/")
 async def root():
@@ -63,7 +63,7 @@ async def health_check():
 async def train_model():
     """Train/retrain the recommendation model"""
     try:
-        logger.info("🎯 Starting model training...")
+        logger.info("[SUCCESS] Starting model training...")
         metrics = recommender.train()
         
         return TrainResponse(
@@ -72,10 +72,10 @@ async def train_model():
             metrics=metrics
         )
     except ValueError as e:
-        logger.warning(f"⚠️ Training skipped: {e}")
+        logger.warning(f"[DEBUG] Training skipped: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"❌ Training failed: {e}")
+        logger.error(f"[ERROR] Training failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/recommendations/{user_id}")
@@ -108,7 +108,7 @@ async def get_recommendations(
             for rec in recommendations
         ]
     except Exception as e:
-        logger.error(f"❌ Recommendation failed: {e}")
+        logger.error(f"[ERROR] Recommendation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/similar-movies/{movie_id}")
@@ -139,7 +139,7 @@ async def get_similar_movies(
             for sim in similar
         ]
     except Exception as e:
-        logger.error(f"❌ Similar movies lookup failed: {e}")
+        logger.error(f"[ERROR] Similar movies lookup failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/feedback")
