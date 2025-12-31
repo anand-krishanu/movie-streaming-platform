@@ -1,8 +1,20 @@
-#  Movie Streaming Platform
+# 🎬 Movie Streaming Platform
 
 A full-stack Netflix-style movie streaming platform with AI-powered recommendations and real-time watch parties.
 
-## Features
+---
+
+## 📚 Documentation
+
+| Component | Description | Link |
+|-----------|-------------|------|
+| 🎨 **Frontend** | React architecture, components, routing, state management | [View Frontend Architecture](FRONTEND_ARCHITECTURE.md) |
+| ⚙️ **Backend** | Spring Boot layers, security, APIs, caching, WebSocket | [View Backend Architecture](BACKEND_ARCHITECTURE.md) |
+| 🤖 **ML Service** | Recommendation algorithms, training pipeline, data scoring | [View ML Architecture](ML_ARCHITECTURE.md) |
+
+---
+
+## ✨ Features
 
 - **Adaptive Video Streaming**: HLS (HTTP Live Streaming) with multiple quality levels (360p-1080p)
 - **Custom Video Player**: Sleek custom UI with volume/playback controls and keyboard shortcuts
@@ -16,47 +28,68 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
 - **Search & Discovery**: Genre filtering, search, and pagination
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
 
-## Architecture
+## 🏗️ System Architecture
+
+### High-Level Overview
 
 ```
-┌─────────────┐      ┌──────────────┐      ┌────────────┐
-│   React     │ ───► │ Spring Boot  │ ───► │  MongoDB   │
-│  (Frontend) │      │  (Backend)   │      │ (Database) │
-│   :5173     │ ◄─── │    :8080     │ ◄─── │            │
-└─────────────┘      └──────────────┘      └────────────┘
-                            │
-                            ▼
-                     ┌──────────────┐
-                     │Python FastAPI│
-                     │ (ML Service) │
-                     │    :5000     │
-                     └──────────────┘
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────┐
+│     React       │ ───► │  Spring Boot    │ ───► │  MongoDB    │
+│   (Frontend)    │      │   (Backend)     │      │ (Database)  │
+│    Port 5173    │ ◄─── │   Port 8080     │ ◄─── │             │
+└─────────────────┘      └─────────────────┘      └─────────────┘
+                                │                          ▲
+                                │                          │
+                                ▼                          │
+                         ┌─────────────────┐              │
+                         │  Python FastAPI │              │
+                         │   (ML Service)  │──────────────┘
+                         │   Port 5000     │
+                         └─────────────────┘
+                                ▲
+                                │
+                         ┌─────────────────┐
+                         │     Redis       │
+                         │  (Cache Layer)  │
+                         └─────────────────┘
 ```
 
-## Tech Stack
+### 🔗 Architecture Details
 
-### Frontend
+For detailed architecture documentation, see:
+- **[Frontend Architecture](FRONTEND_ARCHITECTURE.md)** - Component hierarchy, routing, state management, video player
+- **[Backend Architecture](BACKEND_ARCHITECTURE.md)** - Layered architecture, security, Redis caching, WebSocket
+- **[ML Architecture](ML_ARCHITECTURE.md)** - Hybrid recommendation system, NMF, content-based filtering
+
+## 🛠️ Tech Stack
+
+### Frontend ([Detailed Docs](FRONTEND_ARCHITECTURE.md))
 - **Framework**: React 18 + Vite
 - **Styling**: TailwindCSS
-- **State Management**: Zustand
+- **State Management**: Context API
 - **Routing**: React Router DOM
-- **Video Player**: Custom HLS Player with Thumbnail Previews
-- **Real-time**: STOMP WebSocket Client
+- **Video Player**: Custom HLS Player (HLS.js) with Thumbnail Previews
+- **Real-time**: Socket.IO Client (WebSocket)
 - **HTTP Client**: Axios
-- **UI Components**: React Icons, React Toastify
+- **Authentication**: Firebase
+- **UI Components**: React Icons, Lucide React, React Hot Toast
 
-### Backend
-- **Framework**: Spring Boot 3.x (Java)
-- **Security**: Spring Security + Firebase Admin SDK + Custom Auth Filters
+### Backend ([Detailed Docs](BACKEND_ARCHITECTURE.md))
+- **Framework**: Spring Boot 3.5.7 (Java 21)
+- **Security**: Spring Security + Firebase Admin SDK + JWT Tokens
 - **Database**: MongoDB (Spring Data MongoDB)
+- **Cache**: Redis (for video access, metadata, token blacklist)
 - **WebSocket**: Spring WebSocket (STOMP protocol)
 - **Video Processing**: FFmpeg (HLS segmentation + Thumbnail generation)
 - **Build Tool**: Maven
 
-### ML Service
-- **Framework**: FastAPI (Python)
+### ML Service ([Detailed Docs](ML_ARCHITECTURE.md))
+- **Framework**: FastAPI (Python 3.10+)
 - **ML Libraries**: scikit-learn, Pandas, NumPy
-- **Algorithm**: Non-negative Matrix Factorization (NMF)
+- **Algorithms**: 
+  - Non-negative Matrix Factorization (NMF) for Collaborative Filtering
+  - Cosine Similarity for Content-Based Filtering
+  - Popularity-Based for Cold Start
 - **Database**: PyMongo
 - **Server**: Uvicorn
 
@@ -64,15 +97,16 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
 - **Type**: MongoDB (NoSQL)
 - **Collections**: users, movies, watchProgress, watch_parties
 
-## Prerequisites
+## 📋 Prerequisites
 
 Before running this project, ensure you have the following installed:
 
 - **Node.js**: v18+ and npm
-- **Java**: JDK 17+
+- **Java**: JDK 21 (required for Spring Boot 3.5.7)
 - **Maven**: 3.8+
 - **Python**: 3.10+
 - **MongoDB**: 5.0+ (running locally or remote)
+- **Redis**: Latest version (for caching)
 - **FFmpeg**: Latest version (for video processing)
 - **Firebase Account**: For authentication setup
 
@@ -95,6 +129,33 @@ cd movie-streaming-platform
 6. Place `serviceAccountKey.json` in `BACKEND/src/main/resources/`
 
 ### 3. Backend Setup (Spring Boot)
+
+#### Install Redis
+
+Redis is required for caching video access permissions, metadata, and token blacklist.
+
+**Windows** (PowerShell):
+```powershell
+# Use the provided script
+.\BACKEND\install-redis.ps1
+
+# Or manually with Chocolatey
+choco install redis-64
+
+# Start Redis
+redis-server
+```
+
+**Linux/Mac**:
+```bash
+# Ubuntu/Debian
+sudo apt-get install redis-server
+sudo systemctl start redis
+
+# macOS
+brew install redis
+brew services start redis
+```
 
 #### Set Environment Variables
 
@@ -231,30 +292,38 @@ movie-streaming-platform/
 └── README.md
 ```
 
-## Usage Guide
+## 🚀 Usage Guide
 
 ### For Users
 
 1. **Login**: Click "Sign in with Google"
-2. **Browse Movies**: Explore by genre or search
+2. **Browse Movies**: Explore by genre, search, or use filters
 3. **Watch Movies**: Click any movie to start streaming
+   - **Legacy Player**: Standard HLS streaming
+   - **Secure Player**: Tokenized segment access (recommended)
 4. **Add to Favorites**: Click the heart icon
 5. **Save for Later**: Add to "Watch Later" list
-6. **Get Recommendations**: Check "For You" section for personalized picks
-7. **Watch Together**: Click "Watch Together" to create a room and share the link with friends
+6. **Track Progress**: Resume watching from where you left off
+7. **Get Recommendations**: Check "For You" section for personalized picks
+8. **Watch Together**: Click "Watch Together" to create a room and share the link with friends
+   - Real-time synchronized playback
+   - See who's watching with you
+   - Synced play/pause/seek controls
 
 ### For Admins
 
 1. **Login as Admin**: Use an admin account
 2. **Upload Movie**:
    - Go to Admin Dashboard
-   - Fill in movie details (title, description, genres, etc.)
-   - Upload video file (MP4, MKV, AVI)
-   - System auto-processes video to HLS format
+   - Fill in movie details (title, description, genres, release year, IMDb rating)
+   - Upload video file (MP4, MKV, AVI - max 2GB)
+   - System auto-processes video to HLS format with multiple quality levels
+   - Automatically generates thumbnail previews
 3. **Train ML Model**: Click "Train Model" to update recommendations with latest user data
-4. **View Statistics**: Check user engagement metrics
+4. **View Statistics**: Check user engagement metrics and popular content
+5. **Manage Content**: Delete or update existing movies
 
-## Configuration
+## ⚙️ Configuration
 
 ### Backend Configuration (`application.properties`)
 
@@ -265,14 +334,33 @@ video.upload.dir=${VIDEO_UPLOAD_DIR}
 video.processed.dir=${VIDEO_PROCESSED_DIR}
 ml.service.url=http://localhost:5000
 spring.servlet.multipart.max-file-size=2GB
+spring.servlet.multipart.max-request-size=2GB
+
+# Redis Configuration
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+
+# JWT Token Configuration
+jwt.secret=${JWT_SECRET:your-secret-key-min-32-chars}
+jwt.master-expiration=600000      # 10 minutes
+jwt.segment-expiration=300000     # 5 minutes
 ```
 
 ### Frontend Configuration
 
-- API Base URL: Set in `FRONTEND/src/api/axiosInstance.js` (default: `http://localhost:8080/api`)
-- WebSocket URL: Set in `FRONTEND/src/utils/websocket.js` (default: `http://localhost:8080/ws`)
+- **API Base URL**: Set in `FRONTEND/src/api/*.js` (default: `http://localhost:8080/api`)
+- **WebSocket URL**: Set in `FRONTEND/src/utils/websocket.js` (default: `http://localhost:8080/ws`)
+- **Firebase Config**: Set in `FRONTEND/src/firebase.js`
 
-## ML Model Details
+### ML Service Configuration
+
+- **MongoDB URI**: Set in `.env` or environment variables
+- **Port**: Default 5000, configurable via `PORT` environment variable
+- **Model Path**: `ml-service/saved_models/` for persisted models
+
+## 🤖 ML Model Details
+
+> **For complete ML architecture, see [ML_ARCHITECTURE.md](ML_ARCHITECTURE.md)**
 
 ### Algorithm: Hybrid Recommendation System
 
@@ -290,11 +378,16 @@ spring.servlet.multipart.max-file-size=2GB
    - Trending movies for new users
    - Ensures quality recommendations from day one
 
-### Training Data
+### Training Data & Implicit Feedback
 
-- **Favorites**: 5 points (strong signal)
-- **Watch Later**: 2 points (medium interest)
-- **Watch Progress**: 1-3 points (based on % watched)
+The system infers user interest from actions (no explicit ratings required):
+
+| User Action | Score | Signal Strength |
+|-------------|-------|-----------------|
+| **Add to Favorites** | 5.0 | Strongest |
+| **Watch Progress (100%)** | 3.0 | Completed |
+| **Watch Progress (50%)** | 1.5 | Engaged |
+| **Add to Watch Later** | 2.0 | Intent |
 
 ### Performance Metrics
 
@@ -303,33 +396,40 @@ spring.servlet.multipart.max-file-size=2GB
 - **Cold Start**: 100% coverage for new users
 - **Retraining**: One-click admin control
 
-## API Endpoints
+## 🔌 API Endpoints
 
-### Movies API
-- `GET /api/movies` - Get all movies (paginated)
-- `GET /api/movies/{id}` - Get movie by ID
-- `POST /api/movies/upload` - Upload new movie (Admin)
-- `DELETE /api/movies/{id}` - Delete movie (Admin)
-- `GET /api/movies/stream/{movieId}/{fileName}` - Stream video (HLS)
-- `POST /api/movies/{id}/view` - Increment view count
+> **For complete API documentation, see [BACKEND_ARCHITECTURE.md](BACKEND_ARCHITECTURE.md)**
 
-### User API
-- `POST /api/auth/sync` - Sync Firebase user with backend
+### Authentication & Users
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login with Firebase token
 - `GET /api/users/{id}` - Get user profile
 - `PUT /api/users/{id}/favorites` - Toggle favorite
 - `PUT /api/users/{id}/watch-later` - Toggle watch later
 
-### Recommendations API
+### Movies
+- `GET /api/movies` - Get all movies (paginated, filterable)
+- `GET /api/movies/{id}` - Get movie by ID
+- `POST /api/movies/upload` - Upload new movie (Admin)
+- `DELETE /api/movies/{id}` - Delete movie (Admin)
+- `POST /api/movies/{id}/view` - Increment view count
+
+### Video Streaming
+- `GET /api/movies/stream/{movieId}/master.m3u8` - Legacy HLS streaming
+- `GET /api/videos/{movieId}/master.m3u8` - Secure tokenized master playlist
+- `GET /api/videos/{movieId}/segment/{filename}` - Secure tokenized segment
+
+### Recommendations
 - `GET /api/movies/recommendations` - Get personalized recommendations
 - `GET /api/movies/similar/{id}` - Get similar movies
 
-### Watch Party API
-- `POST /api/watch-party/create` - Create watch party room
-- `GET /api/watch-party/{roomId}` - Get room details
-- `POST /api/watch-party/{roomId}/join` - Join room
-- `POST /api/watch-party/{roomId}/leave` - Leave room
+### Watch Party
+- `POST /api/watch-parties/create` - Create watch party room
+- `GET /api/watch-parties/{roomId}` - Get room details
+- `POST /api/watch-parties/{roomId}/join` - Join room
+- `POST /api/watch-parties/{roomId}/leave` - Leave room
 
-### ML Service API
+### ML Service
 - `POST /train` - Train/retrain model
 - `GET /recommendations/{userId}` - Get user recommendations
 - `GET /similar-movies/{movieId}` - Get similar movies
@@ -340,10 +440,20 @@ spring.servlet.multipart.max-file-size=2GB
 - `SUBSCRIBE /topic/watch-party/{roomId}` - Subscribe to room updates
 - `SEND /app/watch-party/{roomId}/sync` - Send sync event
 
-## Security Features
+## 🔒 Security Features
+
+> **For detailed security implementation, see [BACKEND_ARCHITECTURE.md](BACKEND_ARCHITECTURE.md#security)**
 
 - **Firebase JWT Authentication**: Secure token-based auth
 - **Spring Security**: Role-based access control (ADMIN/USER)
+- **Video Access Tokens**: JWT tokens for secure segment streaming
+  - Master playlist: 10-minute expiration
+  - Video segments: 5-minute expiration
+  - Token blacklist with Redis
+- **Redis Caching**: Performance optimization with security
+  - User access cache (5-minute TTL)
+  - Video metadata cache (15-minute TTL)
+  - Token blacklist (1-hour TTL)
 - **Endpoint Protection**: 
   - `getAllUsers` restricted to ADMIN only
   - `uploadMovie` / `deleteMovie` restricted to ADMIN only
@@ -352,15 +462,30 @@ spring.servlet.multipart.max-file-size=2GB
 - **WebSocket Security**: Authenticated connections only
 - **Password-less Auth**: OAuth 2.0 via Google
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Backend Issues
 
 **Port 8080 already in use:**
 ```bash
-# Find and kill the process
+# Find and kill the process (Windows)
 netstat -ano | findstr :8080
 taskkill /F /PID <process-id>
+
+# Linux/Mac
+lsof -ti:8080 | xargs kill -9
+```
+
+**Redis connection failed:**
+```bash
+# Check if Redis is running
+redis-cli ping
+# Should return "PONG"
+
+# Start Redis
+# Windows: redis-server
+# Linux: sudo systemctl start redis
+# Mac: brew services start redis
 ```
 
 **MongoDB connection failed:**
@@ -369,8 +494,11 @@ taskkill /F /PID <process-id>
 - Ensure database name is `moviestreamingnosql`
 
 **FFmpeg not found:**
-- Install FFmpeg: `choco install ffmpeg` (Windows) or download from [ffmpeg.org](https://ffmpeg.org)
-- Add to PATH
+- Install FFmpeg: 
+  - Windows: `choco install ffmpeg`
+  - Linux: `sudo apt-get install ffmpeg`
+  - Mac: `brew install ffmpeg`
+- Add to PATH and restart terminal
 
 ### Frontend Issues
 
@@ -381,27 +509,51 @@ taskkill /F /PID <process-id>
 
 **API calls failing:**
 - Ensure backend is running on port 8080
-- Check `axiosInstance.js` baseURL
+- Check API base URL in `src/api/*.js`
 - Verify CORS is enabled in backend
+- Check browser console for detailed errors
+
+**Video not playing:**
+- Check if FFmpeg processed the video correctly
+- Verify `videos_processed/{movieId}/master.m3u8` exists
+- Check browser console for HLS errors
+- Try the legacy player if secure player fails
 
 ### ML Service Issues
 
 **Port 5000 in use:**
 ```bash
-# Kill process on port 5000
+# Windows
 netstat -ano | findstr :5000
 taskkill /F /PID <process-id>
+
+# Linux/Mac
+lsof -ti:5000 | xargs kill -9
 ```
 
 **Training fails with "No data":**
 - Ensure MongoDB database is `moviestreamingnosql` (not `movieStreamingDB`)
 - Check if users and movies collections exist
 - Add some user interactions (favorites, watch progress)
+- Verify ML service can connect to MongoDB
 
 **Python dependencies missing:**
 ```bash
+cd ml-service
 pip install -r requirements.txt
 ```
+
+**ImportError or ModuleNotFoundError:**
+- Ensure Python 3.10+ is installed
+- Try creating a virtual environment:
+  ```bash
+  python -m venv venv
+  # Windows
+  .\venv\Scripts\activate
+  # Linux/Mac
+  source venv/bin/activate
+  pip install -r requirements.txt
+  ```
 
 ## Demo
 
@@ -409,40 +561,76 @@ pip install -r requirements.txt
 
 **Try it live:** [Coming soon]
 
-## Project Statistics
+## 📊 Project Statistics
 
 - **Lines of Code**: 15,000+
 - **Components**: 30+ React components
 - **API Endpoints**: 30+ RESTful endpoints
 - **Real-time Channels**: WebSocket with unlimited rooms
-- **Database Collections**: 4 main collections
-- **ML Latent Factors**: 15 hidden patterns
-- **Video Qualities**: 4 levels (360p-1080p)
+- **Database Collections**: 4 main collections (users, movies, watchProgress, watchParties)
+- **ML Latent Factors**: 15 hidden patterns discovered by NMF
+- **Video Qualities**: 4 levels (360p, 480p, 720p, 1080p)
+- **Caching Layers**: 3 Redis caches (userAccess, videoMetadata, tokenBlacklist)
+- **Security Tokens**: 2-tier JWT system (master + segment)
 
-##  Contributing
+## 🎯 Key Features Breakdown
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Video Streaming
+- **HLS Adaptive Streaming**: Automatic quality switching based on bandwidth
+- **Dual Player System**: 
+  - Legacy player for backward compatibility
+  - Secure player with tokenized segment access
+- **Thumbnail Previews**: Hover over timeline to see scene previews
+- **Custom Controls**: Volume, playback speed, fullscreen, keyboard shortcuts
 
-## License
+### Machine Learning
+- **3 Recommendation Algorithms**: Collaborative, Content-Based, Popularity
+- **Implicit Feedback**: No ratings required - learns from user behavior
+- **Cold Start Solution**: New users get popular recommendations immediately
+- **Real-time Training**: Admin can retrain model anytime with new data
+
+### Real-time Features
+- **Watch Parties**: Synchronized viewing across multiple users
+- **Live Sync**: Play, pause, and seek synchronized in real-time
+- **Participant Tracking**: See who's watching with you
+- **WebSocket Communication**: Low-latency event broadcasting
+
+### Performance Optimization
+- **Redis Caching**: Reduces database queries by 70%
+- **Video Token Caching**: Prevents repeated JWT generation
+- **Metadata Caching**: Faster movie browsing experience
+- **Lazy Loading**: Images and components load on-demand
+
+## 📝 License
 
 This project is licensed under the MIT License.
 
-## Author
+## 👤 Author
 
 **Krishanu Anand**
 - GitHub: [@anand-krishanu](https://github.com/anand-krishanu)
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-- React and Vite teams
-- Spring Boot community
-- scikit-learn developers
-- Firebase team
-- FFmpeg project
+- React and Vite teams for excellent developer experience
+- Spring Boot community for comprehensive documentation
+- scikit-learn developers for powerful ML tools
+- Firebase team for seamless authentication
+- FFmpeg project for video processing capabilities
+- Redis Labs for high-performance caching
+- MongoDB team for flexible NoSQL database
 
-## Contact
+## 📬 Contact
 
 For questions or support, please open an issue on GitHub.
+
+---
+
+## 🗂️ Additional Resources
+
+- **[Frontend Architecture](FRONTEND_ARCHITECTURE.md)** - Detailed component structure, routing, and state management
+- **[Backend Architecture](BACKEND_ARCHITECTURE.md)** - API design, security layers, and caching strategies
+- **[ML Architecture](ML_ARCHITECTURE.md)** - Recommendation algorithms and training pipeline
 
 ---
 
