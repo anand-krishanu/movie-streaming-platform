@@ -1,20 +1,20 @@
-# 🎬 Movie Streaming Platform
+# Movie Streaming Platform
 
 A full-stack Netflix-style movie streaming platform with AI-powered recommendations and real-time watch parties.
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 | Component | Description | Link |
 |-----------|-------------|------|
-| 🎨 **Frontend** | React architecture, components, routing, state management | [View Frontend Architecture](FRONTEND_ARCHITECTURE.md) |
-| ⚙️ **Backend** | Spring Boot layers, security, APIs, caching, WebSocket | [View Backend Architecture](BACKEND_ARCHITECTURE.md) |
-| 🤖 **ML Service** | Recommendation algorithms, training pipeline, data scoring | [View ML Architecture](ML_ARCHITECTURE.md) |
+|  **Frontend** | React architecture, components, routing, state management | [View Frontend Architecture](FRONTEND_ARCHITECTURE.md) |
+| **Backend** | Spring Boot layers, security, APIs, caching, WebSocket | [View Backend Architecture](BACKEND_ARCHITECTURE.md) |
+|  **ML Service** | Recommendation algorithms, training pipeline, data scoring | [View ML Architecture](ML_ARCHITECTURE.md) |
 
 ---
 
-## ✨ Features
+##  Features
 
 - **Adaptive Video Streaming**: HLS (HTTP Live Streaming) with multiple quality levels (360p-1080p)
 - **Custom Video Player**: Sleek custom UI with volume/playback controls and keyboard shortcuts
@@ -28,7 +28,7 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
 - **Search & Discovery**: Genre filtering, search, and pagination
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ### High-Level Overview
 
@@ -54,14 +54,14 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
                          └─────────────────┘
 ```
 
-### 🔗 Architecture Details
+###  Architecture Details
 
 For detailed architecture documentation, see:
 - **[Frontend Architecture](FRONTEND_ARCHITECTURE.md)** - Component hierarchy, routing, state management, video player
 - **[Backend Architecture](BACKEND_ARCHITECTURE.md)** - Layered architecture, security, Redis caching, WebSocket
 - **[ML Architecture](ML_ARCHITECTURE.md)** - Hybrid recommendation system, NMF, content-based filtering
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend ([Detailed Docs](FRONTEND_ARCHITECTURE.md))
 - **Framework**: React 18 + Vite
@@ -97,7 +97,7 @@ For detailed architecture documentation, see:
 - **Type**: MongoDB (NoSQL)
 - **Collections**: users, movies, watchProgress, watch_parties
 
-## 📋 Prerequisites
+##  Prerequisites
 
 Before running this project, ensure you have the following installed:
 
@@ -292,7 +292,7 @@ movie-streaming-platform/
 └── README.md
 ```
 
-## 🚀 Usage Guide
+##  Usage Guide
 
 ### For Users
 
@@ -323,7 +323,7 @@ movie-streaming-platform/
 4. **View Statistics**: Check user engagement metrics and popular content
 5. **Manage Content**: Delete or update existing movies
 
-## ⚙️ Configuration
+## Configuration
 
 ### Backend Configuration (`application.properties`)
 
@@ -364,7 +364,7 @@ jwt.segment-expiration=300000     # 5 minutes
 
 **Try it live:** [Coming soon]
 
-## 📊 Project Statistics
+## Project Statistics
 
 - **Lines of Code**: 15,000+
 - **Components**: 30+ React components
@@ -376,7 +376,7 @@ jwt.segment-expiration=300000     # 5 minutes
 - **Caching Layers**: 3 Redis caches (userAccess, videoMetadata, tokenBlacklist)
 - **Security Tokens**: 2-tier JWT system (master + segment)
 
-## 🎯 Key Features Breakdown
+## Key Features Breakdown
 
 ### Video Streaming
 - **HLS Adaptive Streaming**: Automatic quality switching based on bandwidth
@@ -404,16 +404,16 @@ jwt.segment-expiration=300000     # 5 minutes
 - **Metadata Caching**: Faster movie browsing experience
 - **Lazy Loading**: Images and components load on-demand
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License.
 
-## 👤 Author
+## Author
 
 **Krishanu Anand**
 - GitHub: [@anand-krishanu](https://github.com/anand-krishanu)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - React and Vite teams for excellent developer experience
 - Spring Boot community for comprehensive documentation
@@ -423,13 +423,13 @@ This project is licensed under the MIT License.
 - Redis Labs for high-performance caching
 - MongoDB team for flexible NoSQL database
 
-## 📬 Contact
+## Contact
 
 For questions or support, please open an issue on GitHub.
 
 ---
 
-## 🗂️ Additional Resources
+## Additional Resources
 
 - **[Frontend Architecture](FRONTEND_ARCHITECTURE.md)** - Detailed component structure, routing, and state management
 - **[Backend Architecture](BACKEND_ARCHITECTURE.md)** - API design, security layers, and caching strategies
