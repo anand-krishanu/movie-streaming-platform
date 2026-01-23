@@ -3,7 +3,7 @@
 ## Overview
 The Movie Streaming Platform utilizes a **Hybrid Recommendation System** that combines multiple machine learning techniques to provide personalized movie suggestions. This system is designed to handle various user scenarios, including active users with rich history and new users with little to no interaction data ("Cold Start").
 
-## 🧠 Core Components
+##  Core Components
 
 The recommendation engine (`recommender.py`) consists of three main layers:
 
@@ -28,7 +28,7 @@ The recommendation engine (`recommender.py`) consists of three main layers:
 
 ---
 
-## 📊 Data Engineering & Scoring
+##  Data Engineering & Scoring
 
 The system does not rely on explicit 1-5 star ratings. Instead, it infers user interest from their actions on the platform. The `DataLoader` assigns "Implicit Feedback Scores" as follows:
 
@@ -43,7 +43,7 @@ The system does not rely on explicit 1-5 star ratings. Instead, it infers user i
 
 ---
 
-## 🔄 The Hybrid Strategy
+##  The Hybrid Strategy
 
 When generating recommendations, the system combines the scores from the different models:
 
@@ -58,7 +58,7 @@ When generating recommendations, the system combines the scores from the differe
 
 ---
 
-## 🛠️ Technical Implementation
+##  Technical Implementation
 
 *   **Language**: Python 3.10+
 *   **Libraries**:
