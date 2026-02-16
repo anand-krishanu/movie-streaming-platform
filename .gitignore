@@ -12,9 +12,15 @@ venv/
 
 # Firebase & Secrets
 serviceAccountKey.json
+service-account.json
 *firebase*.json
 .env
 .env.local
+.env.docker
+*.env
+
+# Docker
+docker-compose.override.yml
 
 # IDE
 .idea/

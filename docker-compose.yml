@@ -1,0 +1,172 @@
+version: '3.8'
+
+services:
+  # MongoDB Database (Using local MongoDB instead of Docker)
+  # mongodb:
+  #   image: mongo:7.0
+  #   container_name: movie-platform-mongodb
+  #   restart: unless-stopped
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo-data:/data/db
+  #   environment:
+  #     - MONGO_INITDB_DATABASE=moviestreamingdb
+  #   networks:
+  #     - movie-platform-network
+  #   healthcheck:
+  #     test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 20s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: movie-platform-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - movie-platform-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # ML Recommendation Service 
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: movie-platform-ml-service
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://host.docker.internal:27017  # Connect to local MongoDB
+      - MONGO_DB_NAME=moviestreamingdb
+      - PORT=5000
+      - N_COMPONENTS=15
+      - MODEL_PATH=saved_models/recommender.pkl
+      - LOG_LEVEL=INFO
+    volumes:
+      - ml-models:/app/saved_models
+    networks:
+      - movie-platform-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./FRONTEND
+      dockerfile: Dockerfile
+      args:
+        - VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}
+        - VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN}
+        - VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID}
+        - VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET}
+        - VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}
+        - VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8080/api}
+    container_name: movie-platform-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - movie-platform-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+    container_name: movie-platform-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Database (connecting to host's local MongoDB)
+      - MONGODB_URI=mongodb://host.docker.internal:27017/moviestreamingdb
+      
+      # Redis
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      
+      # ML Service
+      - ML_SERVICE_URL=http://ml-service:5000
+      
+      # Video Storage (Docker paths)
+      - VIDEO_UPLOAD_DIR=/app/videos
+      - VIDEO_PROCESSED_DIR=/app/videos_processed
+      
+      # JWT Secret (CHANGE IN PRODUCTION!)
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-256-bit-key-change-this-before-deployment}
+      
+      # Firebase Configuration
+      - FIREBASE_TYPE=${FIREBASE_TYPE}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PRIVATE_KEY_ID=${FIREBASE_PRIVATE_KEY_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}
+      - FIREBASE_AUTH_URI=${FIREBASE_AUTH_URI}
+      - FIREBASE_TOKEN_URI=${FIREBASE_TOKEN_URI}
+      - FIREBASE_AUTH_PROVIDER_X509_CERT_URL=${FIREBASE_AUTH_PROVIDER_X509_CERT_URL}
+      - FIREBASE_CLIENT_X509_CERT_URL=${FIREBASE_CLIENT_X509_CERT_URL}
+      - FIREBASE_UNIVERSE_DOMAIN=${FIREBASE_UNIVERSE_DOMAIN}
+    volumes:
+      - video-uploads:/app/videos
+      - video-processed:/app/videos_processed
+    depends_on:
+      # mongodb:
+      #   condition: service_healthy
+      redis:
+        condition: service_healthy
+      # ml-service:
+      #   condition: service_healthy
+    networks:
+      - movie-platform-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+# Named Volumes for Data Persistence
+volumes:
+  mongo-data:
+    driver: local
+  redis-data:
+    driver: local
+  video-uploads:
+    driver: local
+  video-processed:
+    driver: local
+  ml-models:
+    driver: local
+
+# Custom Network
+networks:
+  movie-platform-network:
+    driver: bridge

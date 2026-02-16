@@ -1,0 +1,78 @@
+version: '3.8'
+
+# Development override for docker-compose.yml
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  # ============================================
+  # Frontend - Development Mode
+  # ============================================
+  frontend:
+    build:
+      context: ./FRONTEND
+      dockerfile: Dockerfile.dev
+    volumes:
+      # Mount source code for hot reload
+      - ./FRONTEND:/app
+      # Exclude node_modules
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: npm run dev
+    environment:
+      - VITE_API_URL=http://localhost:8080
+
+  # ============================================
+  # Backend - Development Mode
+  # ============================================
+  backend:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for hot reload
+    volumes:
+      # Mount source code for hot reload (if using spring-boot-devtools)
+      - ./BACKEND/src:/app/src
+      # Keep target directory in container
+      - backend-target:/app/target
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - LOGGING_LEVEL_ROOT=DEBUG
+      - LOGGING_LEVEL_COM_ANAND_BACKEND=DEBUG
+
+  # ML Service - Development Mode
+  ml-service:
+    volumes:
+      # Mount source code for hot reload
+      - ./ml-service:/app
+      # Exclude pycache
+      - /app/__pycache__
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    environment:
+      - LOG_LEVEL=DEBUG
+
+  # MongoDB - Development Mode (with GUI)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: movie-platform-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+    depends_on:
+      - mongodb
+    networks:
+      - movie-platform-network
+
+volumes:
+  backend-target:
+    driver: local
+
+networks:
+  movie-platform-network:
+    external: true
+    

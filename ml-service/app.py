@@ -16,7 +16,12 @@ app = FastAPI(title="Movie Recommendation ML Service", version="1.0.0")
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:8080", 
+        "http://localhost:5173",
+        "http://backend:8080",
+        "http://frontend:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -146,7 +151,6 @@ async def get_similar_movies(
 async def record_feedback(user_id: str, movie_id: str, rating: float):
     """Record user feedback for incremental learning"""
     try:
-        # Store feedback in MongoDB for next training cycle
         data_loader.record_interaction(user_id, movie_id, rating)
         return {"status": "success", "message": "Feedback recorded"}
     except Exception as e:
