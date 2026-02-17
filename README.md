@@ -8,6 +8,7 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
 
 | Component | Description | Link |
 |-----------|-------------|------|
+|  **Setup Guide** | Complete setup and deployment instructions (Docker & Kubernetes) | [View Setup Guide](HOW-TO-RUN.md) |
 |  **Frontend** | React architecture, components, routing, state management | [View Frontend Architecture](FRONTEND_ARCHITECTURE.md) |
 | **Backend** | Spring Boot layers, security, APIs, caching, WebSocket | [View Backend Architecture](BACKEND_ARCHITECTURE.md) |
 |  **ML Service** | Recommendation algorithms, training pipeline, data scoring | [View ML Architecture](ML_ARCHITECTURE.md) |
@@ -97,168 +98,35 @@ For detailed architecture documentation, see:
 - **Type**: MongoDB (NoSQL)
 - **Collections**: users, movies, watchProgress, watch_parties
 
-##  Prerequisites
+##  Getting Started
 
-Before running this project, ensure you have the following installed:
+### Quick Start
 
-- **Node.js**: v18+ and npm
-- **Java**: JDK 21 (required for Spring Boot 3.5.7)
-- **Maven**: 3.8+
-- **Python**: 3.10+
-- **MongoDB**: 5.0+ (running locally or remote)
-- **Redis**: Latest version (for caching)
-- **FFmpeg**: Latest version (for video processing)
-- **Firebase Account**: For authentication setup
+Ready to run the application? See the complete setup and deployment guide:
 
-## Installation & Setup
+**📖 [HOW-TO-RUN.md](HOW-TO-RUN.md)** - Complete guide for Docker Compose and Kubernetes deployment
 
-### 1. Clone the Repository
+### Prerequisites
 
-```bash
-git clone https://github.com/anand-krishanu/movie-streaming-platform.git
-cd movie-streaming-platform
-```
+Before you begin, you'll need:
 
-### 2. Firebase Setup
+- **Docker** & **Docker Compose** (for containerized deployment)
+- **MongoDB** (running locally on your machine)
+- **Kubernetes** (Minikube + kubectl) - for K8s deployment
+- **Firebase Account** (for Google authentication)
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
-3. Enable **Authentication** → **Google Sign-In**
-4. Go to **Project Settings** → **Service Accounts**
-5. Click **Generate New Private Key** → Save as `serviceAccountKey.json`
-6. Place `serviceAccountKey.json` in `BACKEND/src/main/resources/`
+**See [HOW-TO-RUN.md](HOW-TO-RUN.md) for detailed installation instructions and setup steps.**
 
-### 3. Backend Setup (Spring Boot)
+### Deployment Options
 
-#### Install Redis
+This platform supports two deployment methods:
 
-Redis is required for caching video access permissions, metadata, and token blacklist.
+| Method | Use Case | Complexity | Documentation |
+|--------|----------|------------|---------------|
+| **Docker Compose** | Local development, testing | Easy | [Docker Guide](HOW-TO-RUN.md#running-with-docker-compose) |
+| **Kubernetes** | Production-like, learning K8s | Moderate | [Kubernetes Guide](HOW-TO-RUN.md#running-with-kubernetes) |
 
-**Windows** (PowerShell):
-```powershell
-# Use the provided script
-.\BACKEND\install-redis.ps1
-
-# Or manually with Chocolatey
-choco install redis-64
-
-# Start Redis
-redis-server
-```
-
-**Linux/Mac**:
-```bash
-# Ubuntu/Debian
-sudo apt-get install redis-server
-sudo systemctl start redis
-
-# macOS
-brew install redis
-brew services start redis
-```
-
-#### Set Environment Variables
-
-Create a `.env` file or set these environment variables:
-
-```bash
-# MongoDB
-MONGODB_URI=mongodb://localhost:27017/moviestreamingnosql
-
-# Firebase (optional, if not using serviceAccountKey.json)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# Video Storage Paths
-VIDEO_UPLOAD_DIR=./videos
-VIDEO_PROCESSED_DIR=./videos_processed
-```
-
-#### Run Backend
-
-```bash
-cd BACKEND
-mvn clean install
-mvn spring-boot:run
-```
-
-Backend will start on **http://localhost:8080**
-
-### 4. Frontend Setup (React)
-
-#### Install Dependencies
-
-```bash
-cd FRONTEND
-npm install
-```
-
-#### Configure Firebase
-
-1. Go to Firebase Console → **Project Settings** → **Web App**
-2. Copy your Firebase config
-3. Update `FRONTEND/src/firebase.js` with your credentials:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-auth-domain",
-  projectId: "your-project-id",
-  storageBucket: "your-storage-bucket",
-  messagingSenderId: "your-messaging-sender-id",
-  appId: "your-app-id"
-};
-```
-
-#### Run Frontend
-
-```bash
-npm run dev
-```
-
-Frontend will start on **http://localhost:5173**
-
-### 5. ML Service Setup (Python)
-
-#### Install Python Dependencies
-
-```bash
-cd ml-service
-pip install -r requirements.txt
-```
-
-#### Configure Environment
-
-Create a `.env` file in `ml-service/`:
-
-```bash
-MONGO_URI=mongodb://localhost:27017
-MONGO_DB_NAME=moviestreamingnosql
-PORT=5000
-```
-
-#### Run ML Service
-
-```bash
-python app.py
-```
-
-ML Service will start on **http://localhost:5000**
-
-### 6. MongoDB Setup
-
-#### Option 1: Local MongoDB
-
-```bash
-# Install MongoDB and start the service
-mongod --dbpath /path/to/your/data
-```
-
-#### Option 2: MongoDB Atlas (Cloud)
-
-1. Create a free cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Get your connection string
-3. Update `MONGODB_URI` in environment variables
+Both methods run the same 4 services: Frontend (React), Backend (Spring Boot), ML Service (FastAPI), and Redis (cache).
 
 ## Project Structure
 
@@ -294,34 +162,25 @@ movie-streaming-platform/
 
 ##  Usage Guide
 
-### For Users
+For detailed instructions on running and using the application, see **[HOW-TO-RUN.md](HOW-TO-RUN.md)**.
 
-1. **Login**: Click "Sign in with Google"
-2. **Browse Movies**: Explore by genre, search, or use filters
-3. **Watch Movies**: Click any movie to start streaming
-   - **Legacy Player**: Standard HLS streaming
-   - **Secure Player**: Tokenized segment access (recommended)
-4. **Add to Favorites**: Click the heart icon
-5. **Save for Later**: Add to "Watch Later" list
-6. **Track Progress**: Resume watching from where you left off
-7. **Get Recommendations**: Check "For You" section for personalized picks
-8. **Watch Together**: Click "Watch Together" to create a room and share the link with friends
-   - Real-time synchronized playback
-   - See who's watching with you
-   - Synced play/pause/seek controls
+### Quick Overview
 
-### For Admins
+**For Users:**
+- Sign in with Google
+- Browse and search movies by genre
+- Watch with adaptive quality streaming (360p-1080p)
+- Add to Favorites, Watch Later, or view Watch History
+- Get AI-powered personalized recommendations
+- Create Watch Parties for synchronized viewing with friends
 
-1. **Login as Admin**: Use an admin account
-2. **Upload Movie**:
-   - Go to Admin Dashboard
-   - Fill in movie details (title, description, genres, release year, IMDb rating)
-   - Upload video file (MP4, MKV, AVI - max 2GB)
-   - System auto-processes video to HLS format with multiple quality levels
-   - Automatically generates thumbnail previews
-3. **Train ML Model**: Click "Train Model" to update recommendations with latest user data
-4. **View Statistics**: Check user engagement metrics and popular content
-5. **Manage Content**: Delete or update existing movies
+**For Admins:**
+- Upload movies with metadata (title, genres, year, rating, poster)
+- System auto-processes videos to HLS format with multiple qualities
+- Train ML recommendation model with latest user data
+- Manage content and view statistics
+
+**See the [complete usage guide in HOW-TO-RUN.md](HOW-TO-RUN.md#using-the-application) for step-by-step instructions.**
 
 ## Configuration
 
@@ -431,9 +290,11 @@ For questions or support, please open an issue on GitHub.
 
 ## Additional Resources
 
+- **[HOW-TO-RUN.md](HOW-TO-RUN.md)** - Complete setup guide for Docker and Kubernetes deployment
 - **[Frontend Architecture](FRONTEND_ARCHITECTURE.md)** - Detailed component structure, routing, and state management
 - **[Backend Architecture](BACKEND_ARCHITECTURE.md)** - API design, security layers, and caching strategies
 - **[ML Architecture](ML_ARCHITECTURE.md)** - Recommendation algorithms and training pipeline
+- **[VIDEO-ACCESS-FIX.md](VIDEO-ACCESS-FIX.md)** - Docker volume mounts and video storage explanation
 
 ---
 
