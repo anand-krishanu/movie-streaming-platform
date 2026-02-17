@@ -19,8 +19,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:8080", 
         "http://localhost:5173",
+        "http://localhost:3000",  # Docker frontend
         "http://backend:8080",
-        "http://frontend:5173"
+        "http://frontend:5173",
+        "http://frontend:3000"
     ],
     allow_credentials=True,
     allow_methods=["*"],

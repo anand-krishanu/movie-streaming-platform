@@ -1,6 +1,7 @@
 package com.anand.backend.controller;
 
 import com.anand.backend.entity.Movie;
+import com.anand.backend.entity.User;
 import com.anand.backend.service.MovieService;
 import com.anand.backend.service.MLRecommendationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.google.firebase.auth.FirebaseToken;
 
 import java.io.File;
 import java.util.List;
@@ -87,8 +89,8 @@ public class MovieController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal Object principal
     ) {
-        com.google.firebase.auth.FirebaseToken token = (com.google.firebase.auth.FirebaseToken) principal;
-        com.anand.backend.entity.User user = userService.getUserByEmail(token.getEmail()).orElse(null);
+        FirebaseToken token = (FirebaseToken) principal;
+        User user = userService.getUserByEmail(token.getEmail()).orElse(null);
 
         if (user == null || user.getRole() != com.anand.backend.enums.UserRole.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -152,7 +154,7 @@ public class MovieController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMovie(@PathVariable String id, @AuthenticationPrincipal Object principal) {
-        com.google.firebase.auth.FirebaseToken token = (com.google.firebase.auth.FirebaseToken) principal;
+        FirebaseToken token = (FirebaseToken) principal;
         com.anand.backend.entity.User user = userService.getUserByEmail(token.getEmail()).orElse(null);
 
         if (user == null || user.getRole() != com.anand.backend.enums.UserRole.ADMIN) {

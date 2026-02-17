@@ -89,7 +89,7 @@ services:
     networks:
       - movie-platform-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -135,8 +135,8 @@ services:
       - FIREBASE_CLIENT_X509_CERT_URL=${FIREBASE_CLIENT_X509_CERT_URL}
       - FIREBASE_UNIVERSE_DOMAIN=${FIREBASE_UNIVERSE_DOMAIN}
     volumes:
-      - video-uploads:/app/videos
-      - video-processed:/app/videos_processed
+      - ./BACKEND/videos:/app/videos
+      - ./BACKEND/videos_processed:/app/videos_processed
     depends_on:
       # mongodb:
       #   condition: service_healthy
@@ -147,7 +147,7 @@ services:
     networks:
       - movie-platform-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD-SHELL", "ps aux | grep '[j]ava -jar' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -158,10 +158,6 @@ volumes:
   mongo-data:
     driver: local
   redis-data:
-    driver: local
-  video-uploads:
-    driver: local
-  video-processed:
     driver: local
   ml-models:
     driver: local
