@@ -30,7 +30,6 @@ const LoginPage = () => {
         navigate("/home");
       }
     } catch (error) {
-      console.error("Google sign-in error:", error);
       alert("Sign-in failed. Check console for details.");
     } finally {
       setLoading(false);

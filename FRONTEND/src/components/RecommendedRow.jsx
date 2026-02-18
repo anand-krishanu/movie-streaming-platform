@@ -24,7 +24,6 @@ export default function RecommendedRow() {
       const movies = await movieApi.getRecommendations(10);
       setRecommendations(movies);
     } catch (err) {
-      console.error("Failed to fetch recommendations:", err);
       setError(err.message);
       // Don't show error to user, just silently fail
       // The row simply won't appear

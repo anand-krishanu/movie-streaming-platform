@@ -88,7 +88,7 @@ export default function Navbar() {
     try {
       await signOut(auth);
     } catch (err) {
-      console.warn("Firebase signOut failed:", err);
+      // Silent error handling
     } finally {
       clearUser();
       setOpen(false);

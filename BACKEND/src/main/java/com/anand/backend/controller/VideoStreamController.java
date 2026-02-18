@@ -98,7 +98,6 @@ public class VideoStreamController {
         response.put("videoId", videoId);
         response.put("expiresIn", "600");
         
-        logger.info("Generated player for user {} and video {}", userId, videoId);
         return ResponseEntity.ok(response);
     }
     
@@ -128,8 +127,6 @@ public class VideoStreamController {
         }
         
         String playlist = playlistService.generatePlaylist(videoId, claims.getUserId());
-        
-        logger.info("Served master playlist for video {} to user {}", videoId, claims.getUserId());
         
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/vnd.apple.mpegurl"))

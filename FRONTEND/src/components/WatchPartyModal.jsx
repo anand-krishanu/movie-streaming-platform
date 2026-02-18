@@ -16,7 +16,6 @@ export default function WatchPartyModal({ isOpen, onClose, movieId, onRoomCreate
       onRoomCreated(data.roomId);
       onClose();
     } catch (error) {
-      console.error('Error creating room:', error);
       toast.error('Failed to create watch party');
     } finally {
       setLoading(false);
@@ -36,7 +35,6 @@ export default function WatchPartyModal({ isOpen, onClose, movieId, onRoomCreate
       onRoomCreated(roomId.trim());
       onClose();
     } catch (error) {
-      console.error('Error joining room:', error);
       toast.error('Failed to join watch party. Check room ID.');
     } finally {
       setLoading(false);

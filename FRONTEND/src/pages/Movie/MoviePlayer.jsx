@@ -39,30 +39,22 @@ export default function MoviePlayer() {
           toast.success('Joined watch party!');
         })
         .catch(error => {
-          console.error('Error fetching room:', error);
           toast.error('Failed to join watch party');
-          // Remove invalid roomId from URL
           setSearchParams({});
         });
     }
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
-    // STEP 1: Wait for auth to fully initialize
     if (!authInitialized) {
-      console.log('[AUTH] Waiting for auth to initialize...');
       return;
     }
 
-    // STEP 2: Wait for userData to be synced (this confirms Firebase auth is complete)
     if (!userData || !userData.id) {
-      console.log('[AUTH] Waiting for user data to sync...');
       return;
     }
 
-    // STEP 3: Check if user is authenticated (after userData is loaded)
     if (!dbUser || dbUser._isFallback) {
-      console.log('[AUTH] User not authenticated, redirecting to login...');
       // Save the current URL (including roomId) to redirect back after login
       const currentPath = window.location.pathname + window.location.search;
       localStorage.setItem('redirectAfterLogin', currentPath);
@@ -81,10 +73,8 @@ export default function MoviePlayer() {
         if (!viewIncremented) {
           await movieApi.incrementView(id);
           setViewIncremented(true);
-          console.log('[SUCCESS] View count incremented');
         }
       } catch (error) {
-        console.error("Error fetching movie:", error);
         toast.error("Failed to load movie");
       }
     };
@@ -119,7 +109,6 @@ export default function MoviePlayer() {
       // Show success message based on previous state
       toast.success(wasLiked ? 'Removed from favorites!' : 'Added to favorites!');
     } catch (error) {
-      console.error("Error toggling favorite:", error);
       toast.error("Failed to update favorites");
     }
   };
@@ -133,7 +122,7 @@ export default function MoviePlayer() {
     // Fetch room data
     getWatchParty(roomId)
       .then(data => setRoomData(data))
-      .catch(error => console.error('Error fetching room:', error));
+      .catch(error => {});
   };
 
   const handleShareRoom = () => {

@@ -13,45 +13,41 @@ class WebSocketService {
    */
   connect(onConnectCallback, onErrorCallback) {
     if (this.connected) {
-      console.log('WebSocket already connected');
       onConnectCallback?.();
       return;
     }
 
     this.client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => {
+        const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:8080/ws';
+        return new SockJS(wsUrl);
+      },
       
       connectHeaders: {
         // Add auth headers if needed
       },
       
-      debug: (str) => {
-        console.log('STOMP: ' + str);
-      },
+      debug: () => {},
       
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       
-      onConnect: (frame) => {
-        console.log('WebSocket Connected:', frame);
+      onConnect: () => {
         this.connected = true;
         onConnectCallback?.();
       },
       
       onStompError: (frame) => {
-        console.error('STOMP error:', frame);
         this.connected = false;
         onErrorCallback?.(frame);
       },
       
       onWebSocketClose: () => {
-        console.log('WebSocket connection closed');
         this.connected = false;
       },
       
       onDisconnect: () => {
-        console.log('WebSocket disconnected');
         this.connected = false;
       }
     });
@@ -72,7 +68,6 @@ class WebSocketService {
       
       this.client.deactivate();
       this.connected = false;
-      console.log('WebSocket disconnected');
     }
   }
 
@@ -81,7 +76,6 @@ class WebSocketService {
    */
   subscribe(destination, callback, subscriptionId = null) {
     if (!this.client || !this.connected) {
-      console.error('WebSocket not connected. Cannot subscribe to:', destination);
       return null;
     }
 
@@ -96,14 +90,13 @@ class WebSocketService {
       try {
         const body = JSON.parse(message.body);
         callback(body);
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
-        console.error('Error parsing message:', error);
         callback(message.body);
       }
     });
 
     this.subscriptions.set(id, subscription);
-    console.log('Subscribed to:', destination);
     
     return subscription;
   }
@@ -115,7 +108,6 @@ class WebSocketService {
     if (this.subscriptions.has(subscriptionId)) {
       this.subscriptions.get(subscriptionId).unsubscribe();
       this.subscriptions.delete(subscriptionId);
-      console.log('Unsubscribed from:', subscriptionId);
     }
   }
 
@@ -124,7 +116,6 @@ class WebSocketService {
    */
   send(destination, body = {}) {
     if (!this.client || !this.connected) {
-      console.error('WebSocket not connected. Cannot send to:', destination);
       return;
     }
 
@@ -132,8 +123,6 @@ class WebSocketService {
       destination,
       body: JSON.stringify(body),
     });
-    
-    console.log('Message sent to:', destination, body);
   }
 
   /**

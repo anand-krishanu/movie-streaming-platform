@@ -14,37 +14,28 @@ const MoviePlayerComponent = ({ movieId, poster }) => {
   useEffect(() => {
     const fetchProgress = async () => {
       if (!movieId || !dbUser || dbUser._isFallback) {
-        console.log("Skipping progress fetch (missing ID or user)");
         return;
       }
 
       try {
-        console.log(`[Player] Checking for saved progress...`);
         const progress = await userApi.getMovieProgress(movieId);
         
         if (progress && progress.timestampSeconds > 5 && !progress.completed) {
-          console.log(`[Player] Found resumable progress: ${progress.timestampSeconds}s`);
-          const video = videoRef.current;
           
           if (video) {
             const resume = () => {
-              console.log(`[Player] Setting currentTime to ${progress.timestampSeconds}`);
               video.currentTime = progress.timestampSeconds;
             };
 
-            // If metadata is loaded, seek immediately. Otherwise wait.
             if (video.readyState >= 1) {
               resume();
             } else {
-              console.log(`[Player] Video not ready (readyState=${video.readyState}), waiting for metadata...`);
               video.addEventListener('loadedmetadata', resume, { once: true });
             }
           }
-        } else {
-          console.log(`[Player] No resumable progress (New watch or completed)`);
         }
       } catch (error) {
-        console.error("[Player] Failed to restore progress", error);
+        // Silent error handling
       }
     };
 
@@ -64,21 +55,18 @@ const MoviePlayerComponent = ({ movieId, poster }) => {
       hls.attachMedia(video);
       
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log("HLS manifest loaded, ready to play");
+        // Ready to play
       });
 
       hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error("HLS error:", data);
+        // Error handling
       });
 
       return () => {
         hls.destroy();
       };
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // For Safari which has native HLS support
       video.src = streamUrl;
-    } else {
-      console.error("HLS not supported in this browser");
     }
   }, [movieId]);
 
@@ -96,7 +84,7 @@ const MoviePlayerComponent = ({ movieId, poster }) => {
           await userApi.updateProgress(movieId, currentTime, duration);
         }
       } catch (error) {
-        console.error("Error updating progress:", error);
+        // Silent error handling
       }
     };
 

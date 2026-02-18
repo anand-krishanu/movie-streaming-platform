@@ -41,19 +41,10 @@ public class UserController {
         if (principal == null) throw new RuntimeException("Not authenticated");
 
         FirebaseToken token = (FirebaseToken) principal;
-        
-        log.info("Looking up user by email: {}", token.getEmail());
 
-        // Efficient: Fetch ID by email
         return userService.getUserByEmail(token.getEmail())
-                .map(user -> {
-                    log.info("User found: id={}, email={}", user.getId(), user.getEmail());
-                    return user.getId();
-                })
-                .orElseThrow(() -> {
-                    log.error("User not found in DB for email: {}", token.getEmail());
-                    return new RuntimeException("User not synced in DB");
-                });
+                .map(user -> user.getId())
+                .orElseThrow(() -> new RuntimeException("User not synced in DB"));
     }
 
     /**
@@ -69,15 +60,11 @@ public class UserController {
             @AuthenticationPrincipal Object principal
     ) {
         try {
-            log.info("🎯 toggleFavorite endpoint called for movieId: {}", movieId);
             String userId = getUserId(principal);
-            log.info("👤 User ID resolved: {}", userId);
-            log.info("🔧 About to call userService.toggleFavorite...");
             userService.toggleFavorite(userId, movieId);
-            log.info("✅ userService.toggleFavorite returned");
             return ResponseEntity.ok("Favorite toggled");
         } catch (Exception e) {
-            log.error("❌ Error in toggleFavorite: ", e);
+            log.error("Error toggling favorite: {}", e.getMessage());
             throw e;
         }
     }

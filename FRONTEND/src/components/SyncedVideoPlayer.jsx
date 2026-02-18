@@ -40,18 +40,14 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
       hls.attachMedia(video);
       
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log("HLS manifest loaded, ready to play");
-        // Attempt to resume playback if we have a saved time and NOT in a watch party
         if (!roomId && window.savedResumeTime && window.savedResumeTime > 0) {
-             console.log(`[HLS] Resuming from saved time: ${window.savedResumeTime}`);
              video.currentTime = window.savedResumeTime;
-             // Clear it so we don't seek again unexpectedly
              window.savedResumeTime = null;
         }
       });
 
       hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error("HLS error:", data);
+        // Error handling
       });
 
       return () => {
@@ -59,52 +55,40 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
       };
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = streamUrl;
-    } else {
-      console.error("HLS not supported in this browser");
     }
   }, [movieId, roomId]);
 
   // Fetch and restore playback progress (Solo Mode Only)
   useEffect(() => {
     const fetchProgress = async () => {
-      // Don't auto-resume if we are in a watch party (host controls time)
       if (roomId) return;
       
       if (!movieId || !dbUser || dbUser._isFallback) {
-        console.log("Skipping progress fetch (missing ID or user)");
         return;
       }
 
       try {
-        console.log(`[Player] Checking for saved progress...`);
         const progress = await userApi.getMovieProgress(movieId);
         
         if (progress && progress.timestampSeconds > 5 && !progress.completed) {
-          console.log(`[Player] Found resumable progress: ${progress.timestampSeconds}s`);
           const video = videoRef.current;
           
-          // Store it globally so HLS manifest handler can use it if needed
           window.savedResumeTime = progress.timestampSeconds;
 
           if (video) {
             const resume = () => {
-              console.log(`[Player] Setting currentTime to ${progress.timestampSeconds}`);
               video.currentTime = progress.timestampSeconds;
             };
 
-            // If metadata is loaded, seek immediately. Otherwise wait.
             if (video.readyState >= 1) {
               resume();
             } else {
-              console.log(`[Player] Video not ready (readyState=${video.readyState}), waiting for metadata...`);
               video.addEventListener('loadedmetadata', resume, { once: true });
             }
           }
-        } else {
-          console.log(`[Player] No resumable progress (New watch or completed)`);
         }
       } catch (error) {
-        console.error("[Player] Failed to restore progress", error);
+        // Silent error handling
       }
     };
 
@@ -154,7 +138,7 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
           await userApi.updateProgress(movieId, currentTime, duration);
         }
       } catch (error) {
-        console.error("Error updating progress:", error);
+        // Silent error handling
       }
     };
 
@@ -188,38 +172,27 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
     const video = videoRef.current;
     if (!video) return;
 
-    console.log('[SYNC] Received sync message:', message);
-
-    // Ignore messages from self
     if (message.userId === dbUser?.id) return;
 
-    // Prevent sending sync events while processing incoming sync
     setIsSyncing(true);
 
     try {
-      // FIRST: Sync time if provided (even small differences to stay in sync)
       if (message.currentTime !== undefined && message.currentTime !== null) {
         const timeDiff = Math.abs(video.currentTime - message.currentTime);
-        // Sync if difference > 1 second or if we're about to play
         if (timeDiff > 1 || message.isPlaying) {
           video.currentTime = message.currentTime;
-          console.log(`[SYNC] Synced time to ${message.currentTime}s (diff: ${timeDiff.toFixed(2)}s)`);
         }
       }
 
-      // THEN: Sync play/pause state
       if (message.isPlaying !== undefined && message.isPlaying !== null) {
         if (message.isPlaying && video.paused) {
           video.play()
-            .then(() => console.log('[SYNC] Playing'))
-            .catch(err => console.error('Play error:', err));
+            .catch(err => {});
         } else if (!message.isPlaying && !video.paused) {
           video.pause();
-          console.log('[SYNC] Paused');
         }
       }
     } finally {
-      // Reset syncing flag after a short delay
       setTimeout(() => setIsSyncing(false), 500);
     }
   }, [dbUser]);
@@ -231,24 +204,20 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
     // Connect to WebSocket
     websocketService.connect(
       () => {
-        console.log('[WS] WebSocket connected for watch party');
         setIsConnected(true);
         
-        // Subscribe to room sync events
         websocketService.subscribe(
           `/topic/watch-party/${roomId}`,
           handleSyncMessage,
           `sync-${roomId}`
         );
         
-        // Join the room via WebSocket
         websocketService.send(`/app/watch-party/${roomId}/join`, {
           userId: dbUser.id,
           userName: dbUser.name
         });
       },
       (error) => {
-        console.error('[ERROR] WebSocket connection error:', error);
         toast.error('Connection lost. Trying to reconnect...');
         setIsConnected(false);
       }
@@ -281,7 +250,6 @@ const SyncedVideoPlayer = ({ movieId, poster, roomId, isHost }) => {
       };
 
       websocketService.send(`/app/watch-party/${roomId}/sync`, syncData);
-      console.log('[SYNC] Sent sync:', action, syncData);
     };
 
     const handlePlay = () => sendSync('play');

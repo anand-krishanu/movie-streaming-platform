@@ -19,7 +19,6 @@ const ProfilePage = () => {
       setUser(null);
       navigate("/login");
     } catch (error) {
-      console.error("Logout error:", error);
       alert("Failed to log out. Try again.");
     }
   };

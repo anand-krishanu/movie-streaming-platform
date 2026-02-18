@@ -21,8 +21,7 @@ export default function SimilarMoviesRow({ movieId }) {
       const movies = await movieApi.getSimilarMovies(movieId, 10);
       setSimilarMovies(movies);
     } catch (err) {
-      console.error("Failed to fetch similar movies:", err);
-      // Silently fail, don't show the row
+      // Silently fail
     } finally {
       setLoading(false);
     }

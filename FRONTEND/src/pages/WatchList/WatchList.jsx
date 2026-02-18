@@ -25,7 +25,7 @@ export default function Watchlist() {
     // Refresh user data on mount to ensure we have latest watch later list
     if (!hasRefreshed.current && dbUser && !dbUser._isFallback) {
       hasRefreshed.current = true;
-      refreshUserData().catch(err => console.error(err));
+      refreshUserData().catch(err => {});
     }
   }, [dbUser, authInitialized, navigate, refreshUserData]);
 
@@ -48,7 +48,6 @@ export default function Watchlist() {
         const movies = await Promise.all(moviePromises);
         setWatchLaterMovies(movies.filter(movie => movie !== null));
       } catch (error) {
-        console.error("Error fetching movie details:", error);
         toast.error("Failed to load watch later list");
       } finally {
         setLoading(false);

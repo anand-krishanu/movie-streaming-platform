@@ -10,7 +10,6 @@ export const createWatchParty = async (movieId) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating watch party:', error);
     throw error;
   }
 };
@@ -23,7 +22,6 @@ export const getWatchParty = async (roomId) => {
     const response = await axiosInstance.get(`/watch-party/${roomId}`);
     return response.data;
   } catch (error) {
-    console.error('Error getting watch party:', error);
     throw error;
   }
 };
@@ -36,7 +34,6 @@ export const joinWatchParty = async (roomId) => {
     const response = await axiosInstance.post(`/watch-party/${roomId}/join`);
     return response.data;
   } catch (error) {
-    console.error('Error joining watch party:', error);
     throw error;
   }
 };
@@ -49,7 +46,6 @@ export const leaveWatchParty = async (roomId) => {
     const response = await axiosInstance.post(`/watch-party/${roomId}/leave`);
     return response.data;
   } catch (error) {
-    console.error('Error leaving watch party:', error);
     throw error;
   }
 };

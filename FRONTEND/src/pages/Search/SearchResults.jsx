@@ -21,10 +21,7 @@ export default function SearchResults() {
     const searchMovies = async () => {
       setLoading(true);
       try {
-        console.log('[SEARCH] Searching for:', query);
-        // BACKEND SEARCH (paginated response from /movies/search)
         const response = await movieApi.searchMovies(query);
-        console.log('[SEARCH] Raw response:', response);
 
         // Normalize to array of movies
         const movieList = Array.isArray(response) ? response : (response?.content || []);
@@ -34,7 +31,6 @@ export default function SearchResults() {
           toast.info(`No movies found for "${query}"`);
         }
       } catch (error) {
-        console.error('[ERROR] Search failed:', error);
         toast.error('Failed to search movies');
       } finally {
         setLoading(false);

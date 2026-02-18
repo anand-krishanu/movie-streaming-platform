@@ -50,13 +50,9 @@ const userApi = {
   // Get progress for a specific movie
   getMovieProgress: async (movieId) => {
     try {
-      console.log(`[API] Fetching progress for movie: ${movieId}`);
       const res = await axiosInstance.get(`/user/progress/${movieId}`);
-      console.log(`[API] Progress response:`, res.data);
       return res.data;
     } catch (error) {
-      console.warn(`[API] Error fetching progress for ${movieId}:`, error.message);
-      // 404 means no progress found, which is fine
       if (error.response && error.response.status === 404) {
         return null;
       }

@@ -77,11 +77,6 @@ public class UserService {
      */
     @Transactional
     public void toggleFavorite(String userId, String movieId) {
-        log.info("========================================");
-        log.info("SERVICE METHOD CALLED!!!");
-        log.info("========================================");
-        log.info("🔄 toggleFavorite called - userId: {}, movieId: {}", userId, movieId);
-        
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -91,7 +86,6 @@ public class UserService {
         
         if (movieOpt.isEmpty()) {
             if (isRemoving) {
-                log.warn("⚠️ Movie {} not found, but removing from user favorites (cleanup)", movieId);
                 user.getFavoriteMovieIds().remove(movieId);
                 userRepository.save(user);
                 return;
@@ -100,13 +94,8 @@ public class UserService {
         }
 
         Movie movie = movieOpt.get();
-
-        log.info("📊 Current state - isRemoving: {}, currentLikes: {}", isRemoving,
-            (movie.getStatistics() != null ? movie.getStatistics().getLikes() : "null"));
         
-        // Initialize statistics if null
         if (movie.getStatistics() == null) {
-            log.info("⚠️ Statistics was null, initializing...");
             movie.setStatistics(Movie.Statistics.builder()
                     .views(0)
                     .likes(0)
@@ -114,37 +103,22 @@ public class UserService {
                     .build());
         }
         
-        long beforeLikes = movie.getStatistics().getLikes();
-        
-        // Toggle user's favorite list and movie's like count
         if (isRemoving) {
             user.getFavoriteMovieIds().remove(movieId);
-            // Decrement movie like count
             if (movie.getStatistics().getLikes() > 0) {
                 movie.getStatistics().setLikes(movie.getStatistics().getLikes() - 1);
             }
-            // Remove user from likedByUserIds
             movie.getStatistics().getLikedByUserIds().remove(userId);
-            log.info("➖ Removed from favorites");
         } else {
             user.getFavoriteMovieIds().add(movieId);
-            // Increment movie like count
             movie.getStatistics().setLikes(movie.getStatistics().getLikes() + 1);
-            // Add user to likedByUserIds
             if (!movie.getStatistics().getLikedByUserIds().contains(userId)) {
                 movie.getStatistics().getLikedByUserIds().add(userId);
             }
-            log.info("➕ Added to favorites");
         }
         
-        long afterLikes = movie.getStatistics().getLikes();
-        log.info("💚 Like count change: {} → {}", beforeLikes, afterLikes);
-        
-        User savedUser = userRepository.save(user);
-        Movie savedMovie = movieRepository.save(movie);
-        
-        log.info("✅ Saved - User favorites: {}, Movie likes: {}", 
-            savedUser.getFavoriteMovieIds().size(), savedMovie.getStatistics().getLikes());
+        userRepository.save(user);
+        movieRepository.save(movie);
     }
 
     /**

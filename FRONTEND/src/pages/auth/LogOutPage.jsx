@@ -15,7 +15,7 @@ const Logout = () => {
       try {
         await signOut(auth);
       } catch (err) {
-        console.warn("Firebase signOut failed (maybe user already signed out):", err);
+        // Silent error handling
       } finally {
         // clear local app state and go to login
         clearUser();

@@ -72,7 +72,7 @@ const MovieCard = ({ movie }) => {
       await toggleWatchLater(movieId);
       toast.success(isInWatchLater ? "Removed from watch later!" : "Added to watch later!");
     } catch (error) {
-      console.error("Error toggling watch later:", error);
+
       toast.error("Failed to update watch later");
     } finally {
       setWatchLaterLoading(false);

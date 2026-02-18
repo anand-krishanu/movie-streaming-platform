@@ -20,7 +20,6 @@ export const useMovieStore = create((set) => ({
 
       set({ moviesByGenre: grouped, loading: false });
     } catch (e) {
-      console.error("Failed to fetch movies:", e);
       set({ loading: false });
     }
   },

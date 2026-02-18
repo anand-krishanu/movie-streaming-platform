@@ -25,7 +25,7 @@ export default function FavouritesPage() {
     // Refresh user data on mount to ensure we have latest favorites
     if (!hasRefreshed.current && dbUser && !dbUser._isFallback) {
       hasRefreshed.current = true;
-      refreshUserData().catch(err => console.error(err));
+      refreshUserData().catch(err => {});
     }
   }, [dbUser, authInitialized, navigate, refreshUserData]);
 
@@ -46,14 +46,12 @@ export default function FavouritesPage() {
         const favoriteIds = userData.favoriteMovieIds;
         const moviePromises = favoriteIds.map(id => 
           movieApi.getMovieById(id).catch(err => {
-            console.warn(`Could not fetch movie with id ${id}`, err);
             return null;
           })
         );
         const movies = await Promise.all(moviePromises);
         setFavoriteMovies(movies.filter(movie => movie !== null));
       } catch (error) {
-        console.error("Error fetching movie details:", error);
         toast.error("Failed to load favorites");
       } finally {
         setLoading(false);

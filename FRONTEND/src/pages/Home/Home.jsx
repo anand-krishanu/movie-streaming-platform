@@ -25,17 +25,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!user || !authInitialized) {
-      console.log('[AUTH] Waiting for user authentication...');
-      return; // Don't fetch if not logged in or auth not initialized
+      return;
     }
 
     const fetchMovies = async () => {
-      console.log('[FETCH] Fetching movies for user:', user.email);
       try {
         // Fetch all movies with a large page size to get most movies
         const response = await movieApi.fetchMovies({ page: 0, size: 100 });
-        console.log('[SUCCESS] Movies fetched successfully:', response);
-        console.log('[DEBUG] Sample movie data:', response.content[0]);
         const movies = response.content;
 
         // Group movies by genre on the client side
@@ -52,15 +48,8 @@ export default function Home() {
           }
         });
         
-        console.log('[INFO] Movies grouped by genre:', Object.keys(grouped));
         setMoviesByGenre(grouped);
       } catch (err) {
-        console.error('[ERROR] Error fetching movies:', err);
-        console.error("Error details:", {
-          message: err.message,
-          response: err.response,
-          status: err.response?.status
-        });
         toast.error("Failed to load movies. Please try logging in again.");
       } finally {
         setLoading(false);

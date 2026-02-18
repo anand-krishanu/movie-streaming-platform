@@ -24,10 +24,7 @@ const useAuthStore = create(
             const actualUser = response.user || response;
             set({ dbUser: actualUser, userData: actualUser, authInitialized: true });
             
-            console.log('[AUTH] User synced with backend:', actualUser);
-            
           } catch (error) {
-            console.error('[ERROR] Failed to sync user with backend:', error);
             
             // Fallback for offline mode
             const fallbackDbUser = {
@@ -54,7 +51,6 @@ const useAuthStore = create(
           set({ userData, dbUser: userData });
           return userData;
         } catch (error) {
-          console.error("Failed to refresh user data:", error);
           return null;
         }
       },
@@ -62,14 +58,9 @@ const useAuthStore = create(
       // Toggle favorite (handles add/remove automatically)
       toggleFavorite: async (movieId) => {
         try {
-          console.log('[ACTION] Calling toggleFavorite API for movieId:', movieId);
           const response = await userApi.toggleFavorite(movieId);
-          console.log('[SUCCESS] toggleFavorite API response:', response);
-          // Refresh user data to get updated favorites
           await get().refreshUserData();
-          console.log('[SUCCESS] User data refreshed');
         } catch (error) {
-          console.error('[ERROR] Failed to toggle favorite:', error);
           throw error; // Re-throw to let caller handle it
         }
       },
@@ -78,10 +69,9 @@ const useAuthStore = create(
       toggleWatchLater: async (movieId) => {
         try {
           await userApi.toggleWatchLater(movieId);
-          // Refresh user data to get updated watch later list
           await get().refreshUserData();
         } catch (error) {
-          console.error("Failed to toggle watch later:", error);
+          // Silent error handling
         }
       },
 

@@ -28,11 +28,11 @@ export default function AdminDashboard() {
   const fetchMLStatus = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/");
+      const mlServiceUrl = import.meta.env.VITE_ML_SERVICE_URL || "http://localhost:5000/";
+      const response = await fetch(mlServiceUrl);
       const data = await response.json();
       setMlStatus(data);
     } catch (error) {
-      console.error("Failed to fetch ML status:", error);
       setMlStatus({ status: "unavailable" });
     } finally {
       setLoading(false);
@@ -51,7 +51,6 @@ setTraining(true);
       // Refresh ML status
       await fetchMLStatus();
     } catch (error) {
-      console.error("Training failed:", error);
       toast.error('Training failed. Check if ML service is running.');
     } finally {
       setTraining(false);

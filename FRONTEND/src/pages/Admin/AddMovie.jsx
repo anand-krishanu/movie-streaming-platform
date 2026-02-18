@@ -119,18 +119,15 @@ const AddMovie = () => {
       
       uploadData.append('file', formData.file);
 
-      console.log('[UPLOAD] Uploading movie...');
       const response = await axiosInstance.post('/movies/upload', uploadData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          console.log(`Upload Progress: ${percentCompleted}%`);
         }
       });
 
-      console.log('[SUCCESS] Movie uploaded successfully:', response.data);
       toast.success('Movie uploaded successfully! Processing will begin shortly.');
       
       // Reset form
@@ -153,7 +150,6 @@ const AddMovie = () => {
       }, 2000);
 
     } catch (error) {
-      console.error('[ERROR] Error uploading movie:', error);
       toast.error(error.response?.data?.message || 'Failed to upload movie. Please try again.');
     } finally {
       setLoading(false);

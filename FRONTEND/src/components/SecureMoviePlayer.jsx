@@ -28,36 +28,28 @@ const SecureMoviePlayer = ({ movieId, poster }) => {
   useEffect(() => {
     const fetchProgress = async () => {
       if (!movieId || !dbUser || dbUser._isFallback) {
-        console.log("[SecurePlayer] Skipping progress fetch (missing ID or user)");
         return;
       }
 
       try {
-        console.log(`[SecurePlayer] Checking for saved progress...`);
         const progress = await userApi.getMovieProgress(movieId);
         
         if (progress && progress.timestampSeconds > 5 && !progress.completed) {
-          console.log(`[SecurePlayer] Found resumable progress: ${progress.timestampSeconds}s`);
-          const video = videoRef.current;
           
           if (video) {
             const resume = () => {
-              console.log(`[SecurePlayer] Setting currentTime to ${progress.timestampSeconds}`);
               video.currentTime = progress.timestampSeconds;
             };
 
             if (video.readyState >= 1) {
               resume();
             } else {
-              console.log(`[SecurePlayer] Waiting for metadata...`);
               video.addEventListener('loadedmetadata', resume, { once: true });
             }
           }
-        } else {
-          console.log(`[SecurePlayer] No resumable progress (New watch or completed)`);
         }
       } catch (error) {
-        console.error("[SecurePlayer] Failed to restore progress", error);
+        // Silent error handling
       }
     };
 
@@ -71,11 +63,7 @@ const SecureMoviePlayer = ({ movieId, poster }) => {
 
     const loadSecureStream = async () => {
       try {
-        console.log(`[SecurePlayer] Loading secure stream for movie ${movieId}...`);
-        
-        // Get tokenized playlist URL from backend
         const { playlistUrl, expiresIn } = await movieApi.getSecureStreamUrl(movieId);
-        console.log(`[SecurePlayer] Got secure playlist URL (expires in ${expiresIn}s)`);
         
         // Build full URL
         const baseURL = movieApi.getStreamUrl('').replace('/movies/stream//master.m3u8', '');
@@ -101,41 +89,28 @@ const SecureMoviePlayer = ({ movieId, poster }) => {
           hls.attachMedia(video);
           
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            console.log("[SecurePlayer] ✓ Secure HLS manifest loaded successfully");
+            // Manifest loaded
           });
 
           hls.on(Hls.Events.ERROR, (event, data) => {
-            console.error("[SecurePlayer] HLS error:", data);
-            
-            // If token expired (403), reload with new token
             if (data.details === 'manifestLoadError' || data.details === 'fragLoadError') {
-              console.log("[SecurePlayer] Token may have expired, reloading...");
               setTimeout(() => loadSecureStream(), 1000);
             }
           });
 
-          // Auto-reload tokens before they expire (refresh at 80% of expiry time)
           if (expiresIn) {
-            const refreshTime = expiresIn * 0.8 * 1000; // Convert to ms, refresh at 80%
-            console.log(`[SecurePlayer] Will refresh tokens in ${refreshTime / 1000}s`);
+            const refreshTime = expiresIn * 0.8 * 1000;
             
             setTimeout(() => {
-              console.log("[SecurePlayer] Refreshing tokens...");
               loadSecureStream();
             }, refreshTime);
           }
 
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-          // Safari native HLS support
           video.src = fullUrl;
-          console.log("[SecurePlayer] ✓ Using native HLS (Safari)");
-        } else {
-          console.error("[SecurePlayer] HLS not supported in this browser");
         }
 
       } catch (error) {
-        console.error("[SecurePlayer] Failed to load secure stream:", error);
-        console.log("[SecurePlayer] Falling back to old unsecured endpoint...");
         
         // Fallback to old endpoint
         const streamUrl = movieApi.getStreamUrl(movieId);
@@ -148,10 +123,6 @@ const SecureMoviePlayer = ({ movieId, poster }) => {
           hlsRef.current = hls;
           hls.loadSource(streamUrl);
           hls.attachMedia(video);
-          
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            console.log("[SecurePlayer] ✓ Fallback stream loaded");
-          });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           video.src = streamUrl;
         }
@@ -183,7 +154,7 @@ const SecureMoviePlayer = ({ movieId, poster }) => {
           await userApi.updateProgress(movieId, currentTime, duration);
         }
       } catch (error) {
-        console.error("[SecurePlayer] Error updating progress:", error);
+        // Silent error handling
       }
     };
 
