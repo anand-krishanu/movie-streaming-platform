@@ -7,6 +7,9 @@ COPY mvnw.cmd .
 COPY .mvn .mvn
 COPY pom.xml .
 
+# Fix execute permission (lost when pushed from Windows)
+RUN chmod +x mvnw
+
 # Download dependencies (this layer will be cached if pom.xml doesn't change)
 RUN ./mvnw dependency:resolve
 
