@@ -23,6 +23,16 @@ spec:
         - containerPort: 5000
           name: http
         env:
+        - name: MONGO_URI
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MONGO_URI
+        - name: MONGO_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MONGO_DB_NAME
         - name: MONGODB_URI
           valueFrom:
             configMapKeyRef:

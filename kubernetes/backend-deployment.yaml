@@ -122,6 +122,11 @@ spec:
               name: firebase-secrets
               key: universe_domain
               optional: true
+        volumeMounts:
+        - name: videos
+          mountPath: /app/videos
+        - name: videos-processed
+          mountPath: /app/videos_processed
         resources:
           requests:
             memory: "512Mi"
@@ -140,6 +145,15 @@ spec:
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 5
+      volumes:
+      - name: videos
+        hostPath:
+          path: /hosthome/videos
+          type: DirectoryOrCreate
+      - name: videos-processed
+        hostPath:
+          path: /hosthome/videos_processed
+          type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service

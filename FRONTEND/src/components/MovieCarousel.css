@@ -147,7 +147,7 @@
 
 /* Swiper overrides */
 .swiper {
-  overflow: visible;
+  overflow: hidden;
 }
 
 .swiper-slide {

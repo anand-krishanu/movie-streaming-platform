@@ -5,7 +5,10 @@ metadata:
   namespace: movie-platform
 data:
   # MongoDB Configuration (using host machine MongoDB)
-  MONGODB_URI: "mongodb://host.docker.internal:27017/moviestreamingdb"
+  # Note: Using host IP address to access MongoDB from Minikube pods
+  MONGODB_URI: "mongodb://192.168.1.205:27017/moviestreamingdb"
+  MONGO_URI: "mongodb://192.168.1.205:27017"
+  MONGO_DB_NAME: "moviestreamingdb"
   
   # Redis Configuration
   SPRING_DATA_REDIS_HOST: "redis-service"
