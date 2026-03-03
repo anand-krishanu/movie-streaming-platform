@@ -4,14 +4,35 @@ A full-stack Netflix-style movie streaming platform with AI-powered recommendati
 
 ---
 
-## Documentation
+## 🚀 Quick Start (Fresh Machine)
+
+**New to this project? Start here!**
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/YOUR-USERNAME/movie-streaming-platform.git
+cd movie-streaming-platform
+
+# 2. Run automated setup (Windows)
+.\setup.ps1
+
+# Or for macOS/Linux
+chmod +x setup.sh && ./setup.sh
+```
+
+For detailed step-by-step instructions, see [**DEPLOYMENT-GUIDE.md**](DEPLOYMENT-GUIDE.md)
+
+---
+
+## 📚 Documentation
 
 | Component | Description | Link |
 |-----------|-------------|------|
-|  **Setup Guide** | Complete setup and deployment instructions (Docker & Kubernetes) | [View Setup Guide](HOW-TO-RUN.md) |
-|  **Frontend** | React architecture, components, routing, state management | [View Frontend Architecture](FRONTEND_ARCHITECTURE.md) |
-| **Backend** | Spring Boot layers, security, APIs, caching, WebSocket | [View Backend Architecture](BACKEND_ARCHITECTURE.md) |
-|  **ML Service** | Recommendation algorithms, training pipeline, data scoring | [View ML Architecture](ML_ARCHITECTURE.md) |
+| 🚀 **Fresh Setup** | Step-by-step guide for deploying on a brand new machine | [Deployment Guide](DEPLOYMENT-GUIDE.md) |
+|  **Setup Guide** | Complete setup and deployment instructions (Docker & Kubernetes) | [HOW-TO-RUN.md](HOW-TO-RUN.md) |
+|  **Frontend** | React architecture, components, routing, state management | [Frontend Architecture](FRONTEND_ARCHITECTURE.md) |
+| **Backend** | Spring Boot layers, security, APIs, caching, WebSocket | [Backend Architecture](BACKEND_ARCHITECTURE.md) |
+|  **ML Service** | Recommendation algorithms, training pipeline, data scoring | [ML Architecture](ML_ARCHITECTURE.md) |
 
 ---
 

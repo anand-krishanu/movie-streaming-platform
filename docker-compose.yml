@@ -1,25 +1,25 @@
 version: '3.8'
 
 services:
-  # MongoDB Database (Using local MongoDB instead of Docker)
-  # mongodb:
-  #   image: mongo:7.0
-  #   container_name: movie-platform-mongodb
-  #   restart: unless-stopped
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongo-data:/data/db
-  #   environment:
-  #     - MONGO_INITDB_DATABASE=moviestreamingdb
-  #   networks:
-  #     - movie-platform-network
-  #   healthcheck:
-  #     test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 20s
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: movie-platform-mongodb
+    restart: unless-stopped
+    ports:
+      - "37017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=moviestreamingdb
+    networks:
+      - movie-platform-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   # Redis Cache
   redis:
@@ -27,7 +27,7 @@ services:
     container_name: movie-platform-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "7379:6379"
     volumes:
       - redis-data:/data
     networks:
@@ -39,7 +39,7 @@ services:
       retries: 5
       start_period: 10s
 
-  # ML Recommendation Service 
+  # ML Recommendation Service
   ml-service:
     build:
       context: ./ml-service
@@ -47,9 +47,9 @@ services:
     container_name: movie-platform-ml-service
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "8743:5000"
     environment:
-      - MONGO_URI=mongodb://host.docker.internal:27017  # Connect to local MongoDB
+      - MONGO_URI=mongodb://mongodb:27017
       - MONGO_DB_NAME=moviestreamingdb
       - PORT=5000
       - N_COMPONENTS=15
@@ -57,6 +57,9 @@ services:
       - LOG_LEVEL=INFO
     volumes:
       - ml-models:/app/saved_models
+    depends_on:
+      mongodb:
+        condition: service_healthy
     networks:
       - movie-platform-network
     healthcheck:
@@ -78,11 +81,12 @@ services:
         - VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET}
         - VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}
         - VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}
-        - VITE_API_URL=${VITE_API_URL:-http://localhost:8080/api}
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:9870/api}
+        - VITE_ML_API_URL=${VITE_ML_API_URL:-http://localhost:8743}
     container_name: movie-platform-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "7380:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -103,16 +107,16 @@ services:
     container_name: movie-platform-backend
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "9870:8080"
     environment:
-      # Database (connecting to host's local MongoDB)
-      - MONGODB_URI=mongodb://host.docker.internal:27017/moviestreamingdb
+      # Database
+      - MONGODB_URI=mongodb://mongodb:27017/moviestreamingdb
       
       # Redis
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
       
-      # ML Service
+      # ML Service (internal container port, not host port)
       - ML_SERVICE_URL=http://ml-service:5000
       
       # Video Storage (Docker paths)
@@ -138,12 +142,10 @@ services:
       - ./BACKEND/videos:/app/videos
       - ./BACKEND/videos_processed:/app/videos_processed
     depends_on:
-      # mongodb:
-      #   condition: service_healthy
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      # ml-service:
-      #   condition: service_healthy
     networks:
       - movie-platform-network
     healthcheck:
