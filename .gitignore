@@ -19,6 +19,9 @@ service-account.json
 .env.docker
 *.env
 
+# IMPORTANT: .env.example is NOT ignored (it's the template that should be in git)
+!.env.example
+
 # Docker
 docker-compose.override.yml
 
